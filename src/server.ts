@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 var morgan = require("morgan");
-
 dotenv.config(); // بارگذاری متغیرهای .env
+
+import { fetchExchangeRate } from "./utils/scraper";
 import exchangeRateRoutes from "./routes/exchangeRateRoutes";
 
 const app = express();
@@ -15,7 +16,8 @@ app.get("/", (req, res) => {
   res.send("🚀 سرور اجرا شد...");
 });
 app.use("/api/exchange", exchangeRateRoutes);
-
+//دریافت نرخ ارز هر ده دقیقه
+setInterval(fetchExchangeRate, 1000 * 60 * 10);
 // اجرای سرور روی پورت 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
