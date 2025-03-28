@@ -14,11 +14,13 @@ datasource db {
 }
 
 model ExchangeRate {
-  id        String   @id @default(cuid())
-  currency  String   @unique
-  buyPrice  Float
-  sellPrice Float
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  currency     String   @unique
+  basePrice    Float
+  buyPrice     Float
+  sellPrice    Float
+  profitMargin Float
+  createdAt    DateTime @default(now())
 }
 
 model Settings {
