@@ -13,6 +13,103 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(uuid()) // شناسه یکتا
+  fullname  String
+  email     String   @unique // ایمیل (یونیک)
+  phone     String?  @unique // شماره تماس (اختیاری، یونیک)
+  password  String // رمز عبور (هش‌شده)
+  fullName  String? // نام و نام خانوادگی (اختیاری)
+  createdAt DateTime @default(now()) // تاریخ ایجاد حساب
+  updatedAt DateTime @updatedAt // تاریخ آخرین بروزرسانی
+
+  profile         UserProfile?
+  UserTransaction Transaction[]
+  bankAccounts    BankAccount[]
+}
+
+model UserProfile {
+  id       String  @id @default(uuid())
+  userId   String  @unique
+  avatar   String? // آواتار کاربر (اختیاری)
+  address  String? // آدرس (اختیاری)
+  bio      String? // بیوگرافی (اختیاری)
+  whatsapp String? // شماره واتس‌اپ
+  wechat   String? // آیدی وی‌چت
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  userId    String
+  amount    Float // مبلغ تراکنش
+  type      String // نوع تراکنش (واریز / برداشت)
+  status    String // وضعیت (موفق / ناموفق)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BankAccount {
+  id            String @id @default(uuid())
+  userId        String
+  bankName      String // نام بانک
+  accountNumber String @unique // شماره حساب
+  iban          String @unique // شماره شبا
+  cardNumber    String @unique // شماره کارت
+  expiryDate    String // تاریخ انقضا (MM/YY)
+  cvv2          String // کد CVV2
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CompanyInfo {
+  id        String           @id @default(uuid())
+  name      String
+  slogan    String?
+  logo      String?
+  addresses CompanyAddress[]
+  details   CompanyDetails?
+}
+
+model CompanyAddress {
+  id        String      @id @default(uuid())
+  companyId String
+  company   CompanyInfo @relation(fields: [companyId], references: [id])
+  address   String
+  phone     String
+  country   String
+  email     String
+  latitude  Float?
+  longitude Float?
+}
+
+model FAQ {
+  id       String @id @default(uuid())
+  question String
+  answer   String
+}
+
+model CompanyDetails {
+  id            String      @id @default(uuid())
+  companyId     String      @unique
+  company       CompanyInfo @relation(fields: [companyId], references: [id])
+  aboutUs       String
+  contactUs     String
+  services      String
+  copyrightText String
+}
+
+model SliderImage {
+  id          String   @id @default(uuid())
+  title       String
+  imageUrl    String
+  description String?
+  link        String?
+  createdAt   DateTime @default(now())
+  isActive    Boolean  @default(true)
+}
+
 model ExchangeRate {
   id           String   @id @default(cuid())
   currency     String   @unique

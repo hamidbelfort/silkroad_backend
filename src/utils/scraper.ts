@@ -37,7 +37,7 @@ export const fetchExchangeRate = async () => {
       return { basePrice, buyPrice, sellPrice, profitMargin };
     }
   } catch (error) {
-    console.error("❌ خطا در دریافت نرخ ارز:", error);
+    console.error("❌ Error While Fetching currency Rate:", error);
     return null;
   }
 };
