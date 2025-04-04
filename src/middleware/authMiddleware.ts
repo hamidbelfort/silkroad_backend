@@ -17,9 +17,10 @@ export const authenticateUser = (
   const token = req.header("Authorization");
 
   if (!token) {
-    res
-      .status(401)
-      .json({ message: "دسترسی غیرمجاز! لطفا وارد حساب خود شوید" });
+    res.status(401).json({
+      message:
+        "Unauthorized Access, Please Sign it and try again!",
+    });
     return;
   }
 
@@ -31,7 +32,9 @@ export const authenticateUser = (
     req.user = decoded;
     return next();
   } catch (error) {
-    res.status(401).json({ message: "توکن نامعتبر است، لطفا مجددا وارد شوید" });
+    res.status(401).json({
+      message: "Invalid Token, Please sign in again!",
+    });
     return;
   }
 };

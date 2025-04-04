@@ -20,6 +20,7 @@ app.get("/", (req, res) => {
 });
 //اضافه کردن مسیرها
 app.use("/api/users", userRoutes);
+
 app.use("/api/profile", userProfileRoutes);
 app.use("/api/exchange", exchangeRateRoutes);
 //دریافت نرخ ارز هر ده دقیقه
