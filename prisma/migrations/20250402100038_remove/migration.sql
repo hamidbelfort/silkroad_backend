@@ -12,11 +12,10 @@ PRAGMA defer_foreign_keys=ON;
 PRAGMA foreign_keys=OFF;
 CREATE TABLE "new_User" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "fullname" TEXT NOT NULL,
+    "fullname" TEXT,
     "email" TEXT NOT NULL,
     "phone" TEXT,
     "password" TEXT NOT NULL,
-    "fullName" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );

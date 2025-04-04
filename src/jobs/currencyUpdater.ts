@@ -2,11 +2,21 @@ import { fetchExchangeRate } from "../utils/scraper";
 
 const updateExchangeRate = async () => {
   try {
-    console.log("در حال بروزرسانی نرخ ارز...");
-    await fetchExchangeRate();
-    console.log("نرخ ارز بروزرسانی شد.");
+    console.log("Updating currency price...");
+    const result = await fetchExchangeRate();
+    //console.log("نرخ ارز بروزرسانی شد.");
+    if (result == 1) {
+      console.log("Currency price updated.");
+    } else if (result == 0) {
+      console.log("Currency price did not updated.");
+    } else {
+      console.log("Currency price updated with error.");
+    }
   } catch (error) {
-    console.error("خطا در بروزرسانی نرخ ارز:", error);
+    console.error(
+      "Error occured while fetching currency price :",
+      error
+    );
   }
 };
 

@@ -15,17 +15,18 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid()) // شناسه یکتا
-  fullname  String
+  fullname  String?
   email     String   @unique // ایمیل (یونیک)
   phone     String?  @unique // شماره تماس (اختیاری، یونیک)
   password  String // رمز عبور (هش‌شده)
-  fullName  String? // نام و نام خانوادگی (اختیاری)
   createdAt DateTime @default(now()) // تاریخ ایجاد حساب
   updatedAt DateTime @updatedAt // تاریخ آخرین بروزرسانی
 
   profile         UserProfile?
   UserTransaction Transaction[]
   bankAccounts    BankAccount[]
+
+  UserActionLog UserActionLog[]
 }
 
 model UserProfile {
@@ -59,6 +60,7 @@ model BankAccount {
   cardNumber    String @unique // شماره کارت
   expiryDate    String // تاریخ انقضا (MM/YY)
   cvv2          String // کد CVV2
+  cardImage     String //تصویر کارت بانکی
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -111,13 +113,21 @@ model SliderImage {
 }
 
 model ExchangeRate {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   currency     String
   basePrice    Float
   buyPrice     Float
   sellPrice    Float
   profitMargin Float
   createdAt    DateTime @default(now())
+}
+model UserActionLog {
+  id          String   @id @default(uuid())   // شناسه یکتا
+  userId      String                               // کد کاربر
+  user        User     @relation(fields: [userId], references: [id])  // ارتباط یک به چند با مدل User
+  action      String                               // نوع عملیات (ورود، سفارش، تغییر رمز و ...)
+  description String?                              // توضیحات اضافه (اختیاری)
+  date        DateTime @default(now())            // تاریخ و زمان عملیات
 }
 
 model Settings {

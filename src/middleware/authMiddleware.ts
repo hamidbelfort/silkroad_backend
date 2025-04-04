@@ -1,20 +1,16 @@
 // src/middleware/authMiddleware.ts
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-
+import { AuthRequest } from "../types/express";
 dotenv.config();
-
-interface AuthRequest extends Request {
-  user?: any;
-}
 
 export const authenticateUser = (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): void => {
-  const token = req.header("Authorization");
+  const token = req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
     res.status(401).json({
@@ -26,10 +22,10 @@ export const authenticateUser = (
 
   try {
     const decoded = jwt.verify(
-      token.replace("Bearer ", ""),
-      process.env.JWT_SECRET!
-    );
-    req.user = decoded;
+      token,
+      process.env.JWT_SECRET as string
+    ) as { id: string };
+    req.user = { id: decoded.id };
     return next();
   } catch (error) {
     res.status(401).json({
