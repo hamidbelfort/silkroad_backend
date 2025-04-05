@@ -11,6 +11,9 @@ import userRoutes from "./routes/userRoutes";
 import userProfileRoutes from "./routes/userProfileRoutes";
 import bankAccountRoutes from "./routes/bankAccountRoutes";
 import companyInfoRoutes from "./routes/companyInfoRoutes";
+import companyAddressRoutes from "./routes/companyAddressRoutes";
+import faqRoutes from "./routes/faqRoutes";
+import companyDetailsRoutes from "./routes/companyDetailsRoutes";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -23,7 +26,9 @@ app.use("/api/profile", userProfileRoutes);
 app.use("/api/exchange", exchangeRateRoutes);
 app.use("/api/bankaccount", bankAccountRoutes);
 app.use("/api/company", companyInfoRoutes);
-
+app.use("/api/companyaddress", companyAddressRoutes);
+app.use("/api/faqs", faqRoutes);
+app.use("/api/companydetails", companyDetailsRoutes);
 //دریافت نرخ ارز هر ده دقیقه
 //setInterval(fetchExchangeRate, 1000 * 60 * 10);
 // اجرای سرور روی پورت 3000

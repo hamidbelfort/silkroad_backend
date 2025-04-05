@@ -1,0 +1,95 @@
+import prisma from "../config/prismaClient";
+import { Request, Response } from "express";
+import { AuthRequest } from "../types/express";
+import { logUserAction } from "../utils/userActionLog";
+export const createFAQ = async (
+  req: AuthRequest,
+  res: Response
+): Promise<any> => {
+  try {
+    const count = await prisma.fAQ.count();
+    if (count >= 20) {
+      return res
+        .status(400)
+        .json({ error: "Cannot add more than 20 FAQs." });
+    }
+    const faq = await prisma.fAQ.create({ data: req.body });
+    const userId = req.user?.id;
+    if (userId) {
+      await logUserAction({
+        userId,
+        action: "CREATE_FAQ",
+        description: "Created FAQ.",
+      });
+    }
+
+    res.status(201).json(faq);
+  } catch {
+    res
+      .status(500)
+      .json({ error: "Failed to create FAQ." });
+  }
+};
+
+export const getAllFAQs = async (
+  _: Request,
+  res: Response
+) => {
+  try {
+    const faqs = await prisma.fAQ.findMany();
+    res.status(200).json(faqs);
+  } catch {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch FAQs." });
+  }
+};
+
+export const updateFAQ = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  const { id } = req.params;
+  try {
+    const updated = await prisma.fAQ.update({
+      where: { id },
+      data: req.body,
+    });
+    const userId = req.user?.id;
+    if (userId) {
+      await logUserAction({
+        userId,
+        action: "UPDATE_FAQ",
+        description: `Updated FAQ ${id}`,
+      });
+    }
+    res.status(200).json(updated);
+  } catch {
+    res
+      .status(500)
+      .json({ error: "Failed to update FAQ." });
+  }
+};
+
+export const deleteFAQ = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  const { id } = req.params;
+  try {
+    await prisma.fAQ.delete({ where: { id } });
+    const userId = req.user?.id;
+    if (userId) {
+      await logUserAction({
+        userId,
+        action: "DELETE_FAQ",
+        description: `Deleted FAQ ${id}`,
+      });
+    }
+    res.status(200).json({ message: "FAQ deleted." });
+  } catch {
+    res
+      .status(500)
+      .json({ error: "Failed to delete FAQ." });
+  }
+};
