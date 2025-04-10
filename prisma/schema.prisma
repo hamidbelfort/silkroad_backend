@@ -19,6 +19,8 @@ model User {
   email     String   @unique // ایمیل (یونیک)
   phone     String?  @unique // شماره تماس (اختیاری، یونیک)
   password  String // رمز عبور (هش‌شده)
+  role      Role     @default(CUSTOMER) //نقش کاربر
+  isActive  Boolean  @default(true) //فعال یا غیرفعال بودن حساب کاربر
   createdAt DateTime @default(now()) // تاریخ ایجاد حساب
   updatedAt DateTime @updatedAt // تاریخ آخرین بروزرسانی
 
@@ -27,6 +29,12 @@ model User {
   bankAccounts    BankAccount[]
 
   UserActionLog UserActionLog[]
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  CUSTOMER
 }
 
 model UserProfile {
@@ -121,13 +129,14 @@ model ExchangeRate {
   profitMargin Float
   createdAt    DateTime @default(now())
 }
+
 model UserActionLog {
-  id          String   @id @default(uuid())   // شناسه یکتا
-  userId      String                               // کد کاربر
-  user        User     @relation(fields: [userId], references: [id])  // ارتباط یک به چند با مدل User
-  action      String                               // نوع عملیات (ورود، سفارش، تغییر رمز و ...)
-  description String?                              // توضیحات اضافه (اختیاری)
-  date        DateTime @default(now())            // تاریخ و زمان عملیات
+  id          String   @id @default(uuid()) // شناسه یکتا
+  userId      String // کد کاربر
+  user        User     @relation(fields: [userId], references: [id]) // ارتباط یک به چند با مدل User
+  action      String // نوع عملیات (ورود، سفارش، تغییر رمز و ...)
+  description String? // توضیحات اضافه (اختیاری)
+  date        DateTime @default(now()) // تاریخ و زمان عملیات
 }
 
 model Settings {
