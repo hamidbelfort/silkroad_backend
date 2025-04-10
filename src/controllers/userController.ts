@@ -79,7 +79,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
       description: `User ${user.fullname} logged in successfully.`,
     });
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, name: user.fullname, email: user.email, role: user.role },
       process.env.JWT_SECRET!,
       {
         expiresIn: "1d", // اعتبار یک روزه
