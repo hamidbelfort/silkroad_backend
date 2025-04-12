@@ -19,6 +19,10 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("tiny"));
 
+//مسیر تست سرور
+app.get("/", (req, res) => {
+  res.send("SilkRoad Server is running");
+});
 //اضافه کردن مسیرها
 app.use("/api/users", userRoutes);
 
@@ -29,8 +33,7 @@ app.use("/api/company", companyInfoRoutes);
 app.use("/api/companyaddress", companyAddressRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/companydetails", companyDetailsRoutes);
-//دریافت نرخ ارز هر ده دقیقه
-//setInterval(fetchExchangeRate, 1000 * 60 * 10);
+
 // اجرای سرور روی پورت 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
