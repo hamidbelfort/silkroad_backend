@@ -24,8 +24,7 @@ app.get("/", (req, res) => {
   res.send("SilkRoad Server is running");
 });
 //اضافه کردن مسیرها
-app.use("/api/users", userRoutes);
-
+app.use("/api/auth", userRoutes);
 app.use("/api/profile", userProfileRoutes);
 app.use("/api/exchange", exchangeRateRoutes);
 app.use("/api/bankaccount", bankAccountRoutes);
