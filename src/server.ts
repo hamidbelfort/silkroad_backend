@@ -15,7 +15,12 @@ import companyAddressRoutes from "./routes/companyAddressRoutes";
 import faqRoutes from "./routes/faqRoutes";
 import companyDetailsRoutes from "./routes/companyDetailsRoutes";
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(morgan("tiny"));
 
