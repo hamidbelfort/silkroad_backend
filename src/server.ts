@@ -15,9 +15,20 @@ import companyAddressRoutes from "./routes/companyAddressRoutes";
 import faqRoutes from "./routes/faqRoutes";
 import companyDetailsRoutes from "./routes/companyDetailsRoutes";
 const app = express();
+//کانفیگ cors
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://silkroadservices-git-master-hamid-sorkhroos-projects.vercel.app",
+];
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
