@@ -6,17 +6,14 @@ const updateExchangeRate = async () => {
     const result = await fetchExchangeRate();
     //console.log("نرخ ارز بروزرسانی شد.");
     if (result == 1) {
-      console.log("Currency price updated.");
+      console.log("✅ Yuan price updated.");
     } else if (result == 0) {
-      console.log("Currency price did not updated.");
+      console.log("❌ Yuan price not found from any source.");
     } else {
-      console.log("Currency price updated with error.");
+      console.log("❌ Yuan price updated with error.");
     }
   } catch (error) {
-    console.error(
-      "Error occured while fetching currency price :",
-      error
-    );
+    console.error("Error occured while fetching currency price :", error);
   }
 };
 

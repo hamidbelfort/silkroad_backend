@@ -36,10 +36,11 @@ export const registerUser = async (
         password: hashedPassword,
       },
     });
-
+    //remove password from response
+    const { password: _, ...userWithoutPassword } = newUser;
     return res.status(201).json({
       message: "User account created successfully.",
-      user: newUser,
+      user: userWithoutPassword,
     });
   } catch (error) {
     console.error(error);
