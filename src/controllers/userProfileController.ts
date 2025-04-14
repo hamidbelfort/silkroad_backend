@@ -14,7 +14,7 @@ export const createProfile = async (
     if (!userId) {
       return res
         .status(401)
-        .json({ message: "Unauthorized" });
+        .json({ message: "Unauthorized Attempt" });
     }
 
     // چک کنه که آیا این کاربر قبلاً پروفایل ساخته یا نه
@@ -24,9 +24,18 @@ export const createProfile = async (
       });
 
     if (existingProfile) {
-      return res
-        .status(400)
-        .json({ message: "Profile already exists" });
+      const profile = await prisma.userProfile.update({
+        where: { userId: (req as any).user.id },
+        data: { bio, wechat, whatsapp, address },
+      });
+      await logUserAction({
+        userId: (req as any).user.id,
+        action: "UPDATE_PROFILE",
+        description: "Updated profile.",
+      });
+      return res.status(200).json({
+        message: "Profile updated successfully",
+      });
     }
 
     // ایجاد پروفایل جدید
@@ -39,8 +48,14 @@ export const createProfile = async (
         address,
       },
     });
-
-    res.status(201).json(newProfile);
+    await logUserAction({
+      userId,
+      action: "CREATE_PROFILE",
+      description: "Created profile.",
+    });
+    res.status(201).json({
+      message: "Profile created successfully",
+    });
   } catch (error) {
     console.error("Error creating profile:", error);
     res
@@ -72,7 +87,7 @@ export const getProfile = async (
   }
 };
 
-export const updateProfile = async (
+/*export const updateProfile = async (
   req: Request,
   res: Response
 ) => {
@@ -83,7 +98,11 @@ export const updateProfile = async (
       where: { userId: (req as any).user.id },
       data: { bio, wechat, whatsapp, address },
     });
-
+    await logUserAction({
+      userId: (req as any).user.id,
+      action: "UPDATE_PROFILE",
+      description: "Updated profile.",
+    });
     res.json(profile);
   } catch (error) {
     res.status(500).json({
@@ -91,7 +110,7 @@ export const updateProfile = async (
       error,
     });
   }
-};
+};*/
 
 export const deleteProfile = async (
   req: Request,
