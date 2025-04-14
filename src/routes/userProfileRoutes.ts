@@ -3,7 +3,7 @@ import { authenticateUser } from "../middleware/authMiddleware";
 import {
   createProfile,
   getProfile,
-  updateProfile,
+  //updateProfile,
   deleteProfile,
 } from "../controllers/userProfileController";
 
@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/", authenticateUser, createProfile);
 router.get("/", authenticateUser, getProfile);
-router.put("/", authenticateUser, updateProfile);
+//router.put("/", authenticateUser, updateProfile);
 router.delete("/", authenticateUser, deleteProfile);
 
 export default router;
