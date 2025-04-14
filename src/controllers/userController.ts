@@ -21,7 +21,8 @@ export const registerUser = async (
 
     if (existingUser) {
       return res.status(400).json({
-        message: "Another user has been registered using this email",
+        message:
+          "Another user has been registered using this email",
       });
     }
 
@@ -51,7 +52,10 @@ export const registerUser = async (
 };
 
 // 2. تابع لاگین (Login)
-export const loginUser = async (req: Request, res: Response): Promise<any> => {
+export const loginUser = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   const { email, password } = req.body;
 
   try {
@@ -61,17 +65,25 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res
+        .status(400)
+        .json({ message: "User not found" });
     }
 
     // مقایسه رمز عبور وارد شده با رمز عبور هش‌شده در دیتابیس
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.password
+    );
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Email or Password is wrong." });
+      return res
+        .status(400)
+        .json({ message: "Email or Password is wrong." });
     }
     if (!user.isActive) {
       return res.status(400).json({
-        message: "Your account is deactivated. Please contact support.",
+        message:
+          "Your account is deactivated. Please contact support.",
       });
     }
     await logUserAction({
@@ -80,7 +92,7 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
       description: `User ${user.fullname} logged in successfully.`,
     });
     const token = jwt.sign(
-      { id: user.id, name: user.fullname, email: user.email, role: user.role },
+      { id: user.id },
       process.env.JWT_SECRET!,
       {
         expiresIn: "1d", // اعتبار یک روزه
@@ -90,10 +102,14 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json({
       message: "You have successfully signed in.",
       token,
+      userId: user.id,
+      role: user.role,
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Error occured while loggin in." });
+    return res
+      .status(500)
+      .json({ message: "Error occured while loggin in." });
   }
 };
 
@@ -111,17 +127,27 @@ export const changePassword = async (
     });
 
     if (!user) {
-      return res.status(400).json({ message: "User not found." });
+      return res
+        .status(400)
+        .json({ message: "User not found." });
     }
 
     // مقایسه رمز عبور قبلی با رمز عبور در دیتابیس
-    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    const isOldPasswordValid = await bcrypt.compare(
+      oldPassword,
+      user.password
+    );
     if (!isOldPasswordValid) {
-      return res.status(400).json({ message: "Old password is wrong!" });
+      return res
+        .status(400)
+        .json({ message: "Old password is wrong!" });
     }
 
     // هش کردن رمز عبور جدید
-    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+    const hashedNewPassword = await bcrypt.hash(
+      newPassword,
+      12
+    );
 
     // بروزرسانی رمز عبور
     const updatedUser = await prisma.user.update({
