@@ -174,10 +174,11 @@ export const getUser = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  const { userId } = req.params;
+  const { id } = req.params;
+  console.log(id);
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id },
       select: {
         id: true,
         fullname: true,
