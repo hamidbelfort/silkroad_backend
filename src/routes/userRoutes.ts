@@ -4,6 +4,7 @@ import {
   registerUser,
   loginUser,
   changePassword,
+  getUser,
 } from "../controllers/userController";
 import { authenticateUser } from "../middleware/authMiddleware";
 
@@ -16,6 +17,11 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 // مسیر تغییر رمز عبور
-router.put("/change-password", authenticateUser, changePassword);
-
+router.put(
+  "/change-password",
+  authenticateUser,
+  changePassword
+);
+// دریافت اطلاعات کاربر
+router.get("/getUser", authenticateUser, getUser);
 export default router;
