@@ -23,5 +23,5 @@ router.put(
   changePassword
 );
 // دریافت اطلاعات کاربر
-router.get("/getUser/:id", authenticateUser, getUser);
+router.get("/:id", authenticateUser, getUser);
 export default router;
