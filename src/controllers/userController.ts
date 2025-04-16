@@ -185,6 +185,11 @@ export const getUser = async (
         email: true,
         phone: true,
         role: true,
+        profile: {
+          select: {
+            avatar: true,
+          },
+        },
       },
     }); // چک کردن وجود کاربر با آیدی
     if (!user) {
