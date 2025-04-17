@@ -17,9 +17,7 @@ export const getExchangeRate = async (
         .json({ message: "No exchange rate found" });
     }
 
-    res.status(200).json({
-      exchangeRate,
-    });
+    res.status(200).json(exchangeRate);
   } catch (error) {
     console.error(
       "Error retrieving exchange rate :",
