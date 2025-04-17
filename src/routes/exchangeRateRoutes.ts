@@ -1,8 +1,12 @@
 import express from "express";
-import { getExchangeRate } from "../controllers/exchangeRateController";
-
+import {
+  getExchangeRate,
+  getRateHistory,
+} from "../controllers/exchangeRateController";
+import { authenticateUser } from "../middleware/authMiddleware";
 const router = express.Router();
 
-router.get("/", getExchangeRate);
+router.get("/", authenticateUser, getExchangeRate);
+router.get("/history", getRateHistory);
 
 export default router;

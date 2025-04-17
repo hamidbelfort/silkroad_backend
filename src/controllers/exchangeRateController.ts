@@ -6,22 +6,48 @@ export const getExchangeRate = async (
   res: Response
 ): Promise<any> => {
   try {
-    const exchangeRate = await prisma.exchangeRate.findFirst({
-      orderBy: { createdAt: "desc" },
-    });
+    const exchangeRate =
+      await prisma.exchangeRate.findFirst({
+        orderBy: { createdAt: "desc" },
+      });
 
     if (!exchangeRate) {
-      return res.status(404).json({ message: "نرخ ارز یافت نشد" });
+      return res
+        .status(404)
+        .json({ message: "No exchange rate found" });
     }
 
-    res.json({
-      basePrice: exchangeRate.basePrice,
-      buyPrice: exchangeRate.buyPrice,
-      sellPrice: exchangeRate.sellPrice,
-      updatedAt: exchangeRate.createdAt,
+    res.status(200).json({
+      exchangeRate,
     });
   } catch (error) {
-    console.error("خطا در دریافت نرخ ارز:", error);
-    res.status(500).json({ message: "خطای سرور" });
+    console.error(
+      "Error retrieving exchange rate :",
+      error
+    );
+    res
+      .status(500)
+      .json({ message: "Error retrieving exchange rate" });
+  }
+};
+export const getRateHistory = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const rates = await prisma.exchangeRate.findMany({
+      orderBy: { createdAt: "desc" },
+      select: { basePrice: true, createdAt: true },
+    });
+    if (!rates) {
+      res.status(404).json({
+        message: "No exchange history collected yet",
+      });
+    }
+    return res.status(200).json(rates);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving exchange rate history",
+    });
   }
 };
