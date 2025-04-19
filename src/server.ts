@@ -14,6 +14,7 @@ import companyInfoRoutes from "./routes/companyInfoRoutes";
 import companyAddressRoutes from "./routes/companyAddressRoutes";
 import faqRoutes from "./routes/faqRoutes";
 import companyDetailsRoutes from "./routes/companyDetailsRoutes";
+import sliderRoutes from "./routes/sliderRoutes";
 const app = express();
 //کانفیگ cors
 const allowedOrigins = [
@@ -48,6 +49,7 @@ app.use("/api/company", companyInfoRoutes);
 app.use("/api/companyaddress", companyAddressRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/companydetails", companyDetailsRoutes);
+app.use("/api/slider", sliderRoutes);
 
 // اجرای سرور روی پورت 3000
 const PORT = process.env.PORT || 3000;

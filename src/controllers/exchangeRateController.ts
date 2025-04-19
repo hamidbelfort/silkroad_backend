@@ -8,7 +8,7 @@ export const getExchangeRate = async (
   try {
     const exchangeRate =
       await prisma.exchangeRate.findFirst({
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: "asc" },
       });
 
     if (!exchangeRate) {
