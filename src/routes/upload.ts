@@ -1,34 +1,28 @@
-import express from "express";
-import { upload } from "../middleware/upload";
+import express, { Request, Response } from "express";
+import { upload } from "../utils/upload";
 
 const router = express.Router();
 
+// POST /api/upload?folder=slider
 router.post(
-  "/upload",
+  "/",
   upload.single("file"),
-  (req, res) => {
-    const reqTyped = req as typeof req & {
-      fileValidationError?: string;
-    };
+  async (req: Request, res: Response): Promise<any> => {
+    try {
+      if (!req.file) {
+        return res
+          .status(400)
+          .json({ error: "No file uploaded or invalid file type" });
+      }
 
-    if (reqTyped.fileValidationError) {
-      return res.status(400).json({
-        success: false,
-        message: reqTyped.fileValidationError,
-      });
+      const folder = req.query.folder as string;
+      const filePath = `/uploads/${folder}/${req.file.filename}`;
+
+      return res.status(200).json({ url: filePath });
+    } catch (error) {
+      console.error("Upload error:", error);
+      return res.status(500).json({ error: "File upload failed" });
     }
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No file uploaded",
-      });
-    }
-
-    const folder = req.query.folder;
-    const fileUrl = `/uploads/${folder}/${req.file.filename}`;
-
-    return res.status(200).json({ success: true, fileUrl });
   }
 );
 
