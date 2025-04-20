@@ -27,7 +27,12 @@ export const createSlider = async (
     const slider = await prisma.sliderImage.create({
       data: validated,
     });
-    res.status(201).json(slider);
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: "Slider created successfully",
+      });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -46,7 +51,10 @@ export const updateSlider = async (
       where: { id },
       data: validated,
     });
-    res.json(slider);
+    res.json({
+      success: true,
+      message: "Slider updated successfully",
+    });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -59,7 +67,10 @@ export const deleteSlider = async (
   const { id } = req.params;
   try {
     await prisma.sliderImage.delete({ where: { id } });
-    res.json({ success: true });
+    res.json({
+      success: true,
+      message: "Slider deleted successfully",
+    });
   } catch (err) {
     res
       .status(500)
