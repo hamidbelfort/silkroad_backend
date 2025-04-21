@@ -14,17 +14,16 @@ export const createProfile = async (
     if (!userId) {
       return res
         .status(401)
-        .json({ message: "Unauthorized Attempt" });
+        .json({ success: false, message: "Unauthorized Attempt" });
     }
 
     // چک کنه که آیا این کاربر قبلاً پروفایل ساخته یا نه
-    const existingProfile =
-      await prisma.userProfile.findUnique({
-        where: { userId },
-      });
+    const existingProfile = await prisma.userProfile.findUnique({
+      where: { userId },
+    });
 
     if (existingProfile) {
-      const profile = await prisma.userProfile.update({
+      await prisma.userProfile.update({
         where: { userId: (req as any).user.id },
         data: { bio, wechat, whatsapp, address },
       });
@@ -34,12 +33,13 @@ export const createProfile = async (
         description: "Updated profile.",
       });
       return res.status(200).json({
+        success: true,
         message: "Profile updated successfully",
       });
     }
 
     // ایجاد پروفایل جدید
-    const newProfile = await prisma.userProfile.create({
+    await prisma.userProfile.create({
       data: {
         userId,
         wechat,
@@ -54,19 +54,15 @@ export const createProfile = async (
       description: "Created profile.",
     });
     res.status(201).json({
+      success: true,
       message: "Profile created successfully",
     });
   } catch (error) {
     console.error("Error creating profile:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-export const getProfile = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
+export const getProfile = async (req: Request, res: Response): Promise<any> => {
   try {
     const profile = await prisma.userProfile.findUnique({
       where: { userId: (req as any).user.id },
@@ -75,47 +71,20 @@ export const getProfile = async (
     if (!profile) {
       return res
         .status(404)
-        .json({ message: "Profile not found." });
+        .json({ success: false, message: "Profile not found." });
     }
 
     res.json(profile);
   } catch (error) {
+    console.log("Error getting profile:", error);
     res.status(500).json({
+      success: false,
       message: "Error occured while getting profile data.",
-      error,
     });
   }
 };
 
-/*export const updateProfile = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { bio, wechat, whatsapp, address } = req.body;
-
-    const profile = await prisma.userProfile.update({
-      where: { userId: (req as any).user.id },
-      data: { bio, wechat, whatsapp, address },
-    });
-    await logUserAction({
-      userId: (req as any).user.id,
-      action: "UPDATE_PROFILE",
-      description: "Updated profile.",
-    });
-    res.json(profile);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error occured while updating profile",
-      error,
-    });
-  }
-};*/
-
-export const deleteProfile = async (
-  req: Request,
-  res: Response
-) => {
+export const deleteProfile = async (req: Request, res: Response) => {
   try {
     await prisma.userProfile.delete({
       where: { userId: (req as any).user.id },
@@ -123,9 +92,9 @@ export const deleteProfile = async (
 
     res.json({ message: "Profile deleted successfully" });
   } catch (error) {
+    console.log("Error deleting profile:", error);
     res.status(500).json({
       message: "Error occured while deleting profile",
-      error,
     });
   }
 };
