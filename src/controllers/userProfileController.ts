@@ -8,8 +8,8 @@ export const createProfile = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { bio, wechat, whatsapp, address } = req.body;
-    const userId = req.user?.id; // آی‌دی کاربر از توکن احراز هویت گرفته میشه
+    const { userId, bio, wechat, whatsapp, address } = req.body;
+    //const userId = req.user?.id; // آی‌دی کاربر از توکن احراز هویت گرفته میشه
 
     if (!userId) {
       return res
@@ -64,14 +64,13 @@ export const createProfile = async (
 };
 export const getProfile = async (req: Request, res: Response): Promise<any> => {
   try {
+    const userId = req.params.id;
     const profile = await prisma.userProfile.findUnique({
-      where: { userId: (req as any).user.id },
+      where: { userId },
     });
 
     if (!profile) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Profile not found." });
+      return null;
     }
 
     res.json(profile);
@@ -86,8 +85,9 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
 
 export const deleteProfile = async (req: Request, res: Response) => {
   try {
+    const userId = req.params.id;
     await prisma.userProfile.delete({
-      where: { userId: (req as any).user.id },
+      where: { userId },
     });
 
     res.json({ message: "Profile deleted successfully" });
