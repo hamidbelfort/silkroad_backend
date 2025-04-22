@@ -10,6 +10,7 @@ export const createBankAccount = async (
   try {
     const {
       bankName,
+      accountOwner,
       accountNumber,
       iban,
       cardNumber,
@@ -30,6 +31,7 @@ export const createBankAccount = async (
       data: {
         userId,
         bankName,
+        accountOwner,
         accountNumber,
         iban,
         cardNumber,
@@ -39,12 +41,10 @@ export const createBankAccount = async (
       },
     });
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Bank account created successfully",
-      });
+    res.status(201).json({
+      success: true,
+      message: "Bank account created successfully",
+    });
   } catch (error) {
     console.error(
       "Error occured while creating back account : ",
@@ -67,6 +67,7 @@ export const updateBankAccount = async (
     const userId = req.user?.id;
     const {
       bankName,
+      accountOwner,
       accountNumber,
       iban,
       cardNumber,
@@ -91,6 +92,7 @@ export const updateBankAccount = async (
       where: { id },
       data: {
         bankName,
+        accountOwner,
         accountNumber,
         iban,
         cardNumber,
