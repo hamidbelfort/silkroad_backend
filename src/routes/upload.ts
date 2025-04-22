@@ -6,7 +6,7 @@ const router = express.Router();
 // POST /api/upload?folder=slider
 router.post(
   "/",
-  upload.single("file"),
+  upload.single("image"),
   async (req: Request, res: Response): Promise<any> => {
     try {
       if (!req.file) {

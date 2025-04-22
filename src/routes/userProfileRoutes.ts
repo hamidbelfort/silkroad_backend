@@ -10,8 +10,8 @@ import {
 const router = express.Router();
 
 router.post("/", authenticateUser, createProfile);
-router.get("/", authenticateUser, getProfile);
+router.get("/:id", authenticateUser, getProfile);
 //router.put("/", authenticateUser, updateProfile);
-router.delete("/", authenticateUser, deleteProfile);
+router.delete("/:id", authenticateUser, deleteProfile);
 
 export default router;

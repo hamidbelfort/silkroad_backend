@@ -20,9 +20,10 @@ export const createBankAccount = async (
     const userId = req.user?.id; // مقدار کاربر از میدلور استخراج می‌شود
 
     if (!userId) {
-      return res
-        .status(401)
-        .json({ message: "User is not authorized." });
+      return res.status(401).json({
+        success: false,
+        message: "User is not authorized.",
+      });
     }
 
     const newAccount = await prisma.bankAccount.create({
@@ -38,15 +39,21 @@ export const createBankAccount = async (
       },
     });
 
-    res.status(201).json(newAccount);
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: "Bank account created successfully",
+      });
   } catch (error) {
     console.error(
       "Error occured while creating back account : ",
       error
     );
-    res
-      .status(500)
-      .json({ message: "Something bad happened" });
+    res.status(500).json({
+      success: false,
+      message: "Something bad happened",
+    });
   }
 };
 
@@ -74,6 +81,7 @@ export const updateBankAccount = async (
 
     if (!account || account.userId !== userId) {
       return res.status(404).json({
+        success: false,
         message:
           "Bank account not found or you don't have access permission",
       });
@@ -92,15 +100,19 @@ export const updateBankAccount = async (
       },
     });
 
-    res.json(updatedAccount);
+    res.status(201).json({
+      success: true,
+      message: "Bank account updated successfully",
+    });
   } catch (error) {
     console.error(
       "Error accoured while updating bank account : ",
       error
     );
-    res
-      .status(500)
-      .json({ message: "Something bad happened" });
+    res.status(500).json({
+      success: false,
+      message: "Something bad happened",
+    });
   }
 };
 
@@ -119,6 +131,7 @@ export const deleteBankAccount = async (
 
     if (!account || account.userId !== userId) {
       return res.status(404).json({
+        success: false,
         message:
           "BankAccont not found or you don't have access permission",
       });
@@ -127,6 +140,7 @@ export const deleteBankAccount = async (
     await prisma.bankAccount.delete({ where: { id } });
 
     res.json({
+      success: true,
       message: "Bank Account successfully deleted.",
     });
   } catch (error) {
@@ -134,9 +148,10 @@ export const deleteBankAccount = async (
       "Error occured while deleting bank account :",
       error
     );
-    res
-      .status(500)
-      .json({ message: "Something bad happened" });
+    res.status(500).json({
+      success: false,
+      message: "Something bad happened",
+    });
   }
 };
 
@@ -155,6 +170,7 @@ export const getBankAccount = async (
 
     if (!account || account.userId !== userId) {
       return res.status(404).json({
+        success: false,
         message:
           "BankAccont not found or you don't have access permission",
       });
@@ -166,9 +182,10 @@ export const getBankAccount = async (
       "Error occured while getting bank account data :",
       error
     );
-    res
-      .status(500)
-      .json({ message: "Something bad happened" });
+    res.status(500).json({
+      success: false,
+      message: "Something bad happened",
+    });
   }
 };
 
@@ -190,9 +207,10 @@ export const getAllBankAccounts = async (
       "Error occured while getting bank account data :",
       error
     );
-    res
-      .status(500)
-      .json({ message: "Something bad happened" });
+    res.status(500).json({
+      success: false,
+      message: "Something bad happened",
+    });
   }
 };
 export const getBankAccountsByUserId = async (
@@ -208,6 +226,7 @@ export const getBankAccountsByUserId = async (
 
     if (accounts.length === 0) {
       return res.status(404).json({
+        success: false,
         message:
           "No bank accounts associated with user was found.",
       });
@@ -219,8 +238,9 @@ export const getBankAccountsByUserId = async (
       "Error occured while getting bank account data :",
       error
     );
-    res
-      .status(500)
-      .json({ message: "Something bad happened" });
+    res.status(500).json({
+      success: false,
+      message: "Something bad happened",
+    });
   }
 };
