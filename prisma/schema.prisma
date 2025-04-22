@@ -68,7 +68,8 @@ model BankAccount {
   accountNumber String @unique // شماره حساب
   iban          String @unique // شماره شبا
   cardNumber    String @unique // شماره کارت
-  expiryDate    String // تاریخ انقضا (MM/YY)
+  expiryYear    String // تاریخ انقضا (MM/YY)
+  expiryMonth   String // تاریخ انقضا (MM/YY)
   cvv2          String // کد CVV2
   cardImage     String //تصویر کارت بانکی
 
