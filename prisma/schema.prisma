@@ -15,21 +15,21 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) // شناسه یکتا
-  fullname  String?
-  email     String   @unique // ایمیل (یونیک)
-  phone     String?  @unique // شماره تماس (اختیاری، یونیک)
-  password  String // رمز عبور (هش‌شده)
-  role      Role     @default(CUSTOMER) //نقش کاربر
-  isActive  Boolean  @default(true) //فعال یا غیرفعال بودن حساب کاربر
-  createdAt DateTime @default(now()) // تاریخ ایجاد حساب
-  updatedAt DateTime @updatedAt // تاریخ آخرین بروزرسانی
+  id                  String   @id @default(uuid()) // شناسه یکتا
+  fullname            String?
+  email               String   @unique // ایمیل (یونیک)
+  phone               String?  @unique // شماره تماس (اختیاری، یونیک)
+  password            String // رمز عبور (هش‌شده)
+  role                Role     @default(CUSTOMER) //نقش کاربر
+  isActive            Boolean  @default(true) //فعال یا غیرفعال بودن حساب کاربر
+  preferredLanguage   String?  @default("en") // یا zh
+  createdAt           DateTime @default(now()) // تاریخ ایجاد حساب
+  updatedAt           DateTime @updatedAt // تاریخ آخرین بروزرسانی
 
-  profile         UserProfile?
-  UserTransaction Transaction[]
-  bankAccounts    BankAccount[]
-
-  UserActionLog UserActionLog[]
+  profile             UserProfile?
+  UserTransaction     Transaction[]
+  bankAccounts        BankAccount[]
+  UserActionLog       UserActionLog[]
 }
 
 enum Role {

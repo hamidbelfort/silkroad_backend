@@ -5,6 +5,7 @@ import {
   loginUser,
   changePassword,
   getUser,
+  getUserLanguage,
 } from "../controllers/userController";
 import { authenticateUser } from "../middleware/authMiddleware";
 
@@ -24,4 +25,6 @@ router.put(
 );
 // دریافت اطلاعات کاربر
 router.get("/:id", authenticateUser, getUser);
+//دریافت تنظیمات زبان کاربر
+router.post("/language", authenticateUser, getUserLanguage);
 export default router;

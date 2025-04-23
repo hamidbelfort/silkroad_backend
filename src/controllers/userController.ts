@@ -50,7 +50,35 @@ export const registerUser = async (
     });
   }
 };
+export const getUserLanguage = async (
+  req: any,
+  res: any
+) => {
+  const userId = req.user?.id; // از middleware گرفته می‌شه
+  const { language } = req.body;
 
+  if (!["en", "zh"].includes(language)) {
+    return res
+      .status(400)
+      .json({ success: false, error: "Invalid language" });
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { preferredLanguage: language },
+    });
+
+    return res.status(200).json({
+      success: false,
+      message: "Language updated successfully",
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, error: "Server error" });
+  }
+};
 // 2. تابع لاگین (Login)
 export const loginUser = async (
   req: Request,
@@ -104,6 +132,7 @@ export const loginUser = async (
       token,
       userId: user.id,
       role: user.role,
+      preferredLanguage: user.preferredLanguage,
     });
   } catch (error) {
     console.error(error);
