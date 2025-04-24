@@ -6,26 +6,18 @@ export const getExchangeRate = async (
   res: Response
 ): Promise<any> => {
   try {
-    const exchangeRate =
-      await prisma.exchangeRate.findFirst({
-        orderBy: { createdAt: "asc" },
-      });
+    const exchangeRate = await prisma.exchangeRate.findFirst({
+      orderBy: { createdAt: "desc" },
+    });
 
     if (!exchangeRate) {
-      return res
-        .status(404)
-        .json({ message: "No exchange rate found" });
+      return res.status(404).json({ message: "No exchange rate found" });
     }
 
     res.status(200).json(exchangeRate);
   } catch (error) {
-    console.error(
-      "Error retrieving exchange rate :",
-      error
-    );
-    res
-      .status(500)
-      .json({ message: "Error retrieving exchange rate" });
+    console.error("Error retrieving exchange rate :", error);
+    res.status(500).json({ message: "Error retrieving exchange rate" });
   }
 };
 export const getRateHistory = async (
@@ -34,7 +26,7 @@ export const getRateHistory = async (
 ): Promise<any> => {
   try {
     const rates = await prisma.exchangeRate.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
       select: { basePrice: true, createdAt: true },
     });
     if (!rates) {
