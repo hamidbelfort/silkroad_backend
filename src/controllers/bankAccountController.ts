@@ -48,10 +48,7 @@ export const createBankAccount = async (
       message: "Bank account created successfully",
     });
   } catch (error) {
-    console.error(
-      "Error occured while creating back account : ",
-      error
-    );
+    console.error("Error occured while creating back account : ", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -86,8 +83,7 @@ export const updateBankAccount = async (
     if (!account || account.userId !== userId) {
       return res.status(404).json({
         success: false,
-        message:
-          "Bank account not found or you don't have access permission",
+        message: "Bank account not found or you don't have access permission",
       });
     }
 
@@ -111,10 +107,7 @@ export const updateBankAccount = async (
       message: "Bank account updated successfully",
     });
   } catch (error) {
-    console.error(
-      "Error accoured while updating bank account : ",
-      error
-    );
+    console.error("Error accoured while updating bank account : ", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -138,8 +131,7 @@ export const deleteBankAccount = async (
     if (!account || account.userId !== userId) {
       return res.status(404).json({
         success: false,
-        message:
-          "BankAccont not found or you don't have access permission",
+        message: "BankAccont not found or you don't have access permission",
       });
     }
 
@@ -150,10 +142,7 @@ export const deleteBankAccount = async (
       message: "Bank Account successfully deleted.",
     });
   } catch (error) {
-    console.error(
-      "Error occured while deleting bank account :",
-      error
-    );
+    console.error("Error occured while deleting bank account :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -177,17 +166,13 @@ export const getBankAccount = async (
     if (!account || account.userId !== userId) {
       return res.status(404).json({
         success: false,
-        message:
-          "BankAccont not found or you don't have access permission",
+        message: "BankAccont not found or you don't have access permission",
       });
     }
 
     res.json(account);
   } catch (error) {
-    console.error(
-      "Error occured while getting bank account data :",
-      error
-    );
+    console.error("Error occured while getting bank account data :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -206,13 +191,9 @@ export const getAllBankAccounts = async (
     const accounts = await prisma.bankAccount.findMany({
       where: { userId },
     });
-
     res.json(accounts);
   } catch (error) {
-    console.error(
-      "Error occured while getting bank account data :",
-      error
-    );
+    console.error("Error occured while getting bank account data :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -230,20 +211,17 @@ export const getBankAccountsByUserId = async (
       where: { userId },
     });
 
-    if (accounts.length === 0) {
+    /*if (accounts.length === 0) {
       return res.status(404).json({
         success: false,
         message:
           "No bank accounts associated with user was found.",
       });
-    }
+    }*/
 
     res.json(accounts);
   } catch (error) {
-    console.error(
-      "Error occured while getting bank account data :",
-      error
-    );
+    console.error("Error occured while getting bank account data :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
