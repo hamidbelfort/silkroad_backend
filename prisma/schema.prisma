@@ -27,9 +27,9 @@ model User {
   updatedAt           DateTime @updatedAt // تاریخ آخرین بروزرسانی
 
   profile             UserProfile?
-  UserTransaction     Transaction[]
   bankAccounts        BankAccount[]
   UserActionLog       UserActionLog[]
+  ExchangeOrder       ExchangeOrder[]
 }
 
 enum Role {
@@ -37,7 +37,15 @@ enum Role {
   OPERATOR
   CUSTOMER
 }
-
+enum OrderStatus{
+  PENDING       // در انتظار بررسی اپراتور
+  WAITING_PAYMENT // در انتظار پرداخت توسط کاربر
+  PAID          // پرداخت شده
+  APPROVED      // تایید نهایی اپراتور
+  REJECTED      // رد شده توسط اپراتور
+  CANCELED      // لغو شده توسط کاربر
+  COMPLETED     // تسویه و انجام شده
+}
 model UserProfile {
   id       String  @id @default(uuid())
   userId   String  @unique
@@ -49,15 +57,22 @@ model UserProfile {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+model ExchangeOrder {
+  id              Int       @id @default(autoincrement())
+  userId          String    // کد کاربر
+  amount          Float     // مقدار یوان وارد شده
+  finalAmount     Float     // مبلغ نهایی به تومان
+  bankAccountId   String       // آیدی حساب بانکی انتخاب شده
+  isDisputed      Boolean   @default(false) // آیا سفارش مورد اعتراض قرار گرفته؟
+  status          OrderStatus @default(PENDING) // وضعیت سفارش
+  paymentRef      String?   // شماره پیگیری پرداخت (اختیاری - بعد از پرداخت ذخیره میشه)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-model Transaction {
-  id        String   @id @default(uuid())
-  userId    String
-  amount    Float // مبلغ تراکنش
-  type      String // نوع تراکنش (واریز / برداشت)
-  status    String // وضعیت (موفق / ناموفق)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // ریلیشن
+  bankAccount     BankAccount @relation(fields: [bankAccountId], references: [id])
+  //user
+  user            User @relation(fields: [userId], references: [id])
 }
 
 model BankAccount {
@@ -68,12 +83,11 @@ model BankAccount {
   accountNumber String @unique // شماره حساب
   iban          String @unique // شماره شبا
   cardNumber    String @unique // شماره کارت
-  expiryYear    String // تاریخ انقضا (MM/YY)
-  expiryMonth   String // تاریخ انقضا (MM/YY)
-  cvv2          String // کد CVV2
   cardImage     String //تصویر کارت بانکی
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ExchangeOrder ExchangeOrder[]
 }
 
 model CompanyInfo {
@@ -142,7 +156,10 @@ model UserActionLog {
   date        DateTime @default(now()) // تاریخ و زمان عملیات
 }
 
-model Settings {
-  id           Int   @id @default(autoincrement())
-  profitMargin Float @default(0.5) // درصد سود (مثلاً 0.5 یعنی نیم درصد)
+model AppSettings {
+  id                    Int     @id @default(autoincrement())
+  profitMargin          Float   @default(0.5) // درصد سود (مثلاً 0.5 یعنی نیم درصد)
+  orderDisputeThreshold Int     @default(50000) //سقف مبلغ قابل اعتراض
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
