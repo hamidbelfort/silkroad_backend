@@ -15,21 +15,21 @@ datasource db {
 }
 
 model User {
-  id                  String   @id @default(uuid()) // شناسه یکتا
-  fullname            String?
-  email               String   @unique // ایمیل (یونیک)
-  phone               String?  @unique // شماره تماس (اختیاری، یونیک)
-  password            String // رمز عبور (هش‌شده)
-  role                Role     @default(CUSTOMER) //نقش کاربر
-  isActive            Boolean  @default(true) //فعال یا غیرفعال بودن حساب کاربر
-  preferredLanguage   String?  @default("en") // یا zh
-  createdAt           DateTime @default(now()) // تاریخ ایجاد حساب
-  updatedAt           DateTime @updatedAt // تاریخ آخرین بروزرسانی
+  id                String   @id @default(uuid()) // شناسه یکتا
+  fullname          String?
+  email             String   @unique // ایمیل (یونیک)
+  phone             String?  @unique // شماره تماس (اختیاری، یونیک)
+  password          String // رمز عبور (هش‌شده)
+  role              Role     @default(CUSTOMER) //نقش کاربر
+  isActive          Boolean  @default(true) //فعال یا غیرفعال بودن حساب کاربر
+  preferredLanguage String?  @default("en") // یا zh
+  createdAt         DateTime @default(now()) // تاریخ ایجاد حساب
+  updatedAt         DateTime @updatedAt // تاریخ آخرین بروزرسانی
 
-  profile             UserProfile?
-  bankAccounts        BankAccount[]
-  UserActionLog       UserActionLog[]
-  ExchangeOrder       ExchangeOrder[]
+  profile       UserProfile?
+  bankAccounts  BankAccount[]
+  UserActionLog UserActionLog[]
+  ExchangeOrder ExchangeOrder[]
 }
 
 enum Role {
@@ -37,15 +37,18 @@ enum Role {
   OPERATOR
   CUSTOMER
 }
-enum OrderStatus{
-  PENDING       // در انتظار بررسی اپراتور
+
+enum OrderStatus {
+  PENDING // در انتظار بررسی اپراتور
   WAITING_PAYMENT // در انتظار پرداخت توسط کاربر
-  PAID          // پرداخت شده
-  APPROVED      // تایید نهایی اپراتور
-  REJECTED      // رد شده توسط اپراتور
-  CANCELED      // لغو شده توسط کاربر
-  COMPLETED     // تسویه و انجام شده
+  PAID // پرداخت شده
+  APPROVED // تایید نهایی اپراتور
+  REJECTED // رد شده توسط اپراتور
+  CANCELED // لغو شده توسط کاربر
+  COMPLETED // تسویه و انجام شده
+  WAITING_REVIEW // 👈 اضافه شده: در انتظار بررسی اپراتور
 }
+
 model UserProfile {
   id       String  @id @default(uuid())
   userId   String  @unique
@@ -57,33 +60,35 @@ model UserProfile {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-model ExchangeOrder {
-  id              Int       @id @default(autoincrement())
-  userId          String    // کد کاربر
-  amount          Float     // مقدار یوان وارد شده
-  finalAmount     Float     // مبلغ نهایی به تومان
-  bankAccountId   String       // آیدی حساب بانکی انتخاب شده
-  isDisputed      Boolean   @default(false) // آیا سفارش مورد اعتراض قرار گرفته؟
-  status          OrderStatus @default(PENDING) // وضعیت سفارش
-  paymentRef      String?   // شماره پیگیری پرداخت (اختیاری - بعد از پرداخت ذخیره میشه)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
 
-  // ریلیشن
-  bankAccount     BankAccount @relation(fields: [bankAccountId], references: [id])
+model ExchangeOrder {
+  id            Int         @id @default(autoincrement())
+  userId        String // کد کاربر
+  amount        Float // مقدار یوان
+  finalAmount   Float // مبلغ نهایی تومان
+  bankAccountId String
+  isDisputed    Boolean     @default(false) // اعتراض داره؟
+  status        OrderStatus @default(PENDING)
+  paymentRef    String? // شماره پیگیری پرداخت
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  expiredAt     DateTime? // زمان انقضای سفارش (اختیاری برای سفارش‌های معترض)
+
+  // bankAccount
+  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id])
   //user
-  user            User @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
 }
 
 model BankAccount {
-  id            String @id @default(uuid())
+  id            String  @id @default(uuid())
   userId        String
-  bankName      String // نام بانک
+  bankName      String? // نام بانک
   accountOwner  String // صاحب حساب
-  accountNumber String @unique // شماره حساب
-  iban          String @unique // شماره شبا
-  cardNumber    String @unique // شماره کارت
-  cardImage     String //تصویر کارت بانکی
+  accountNumber String  @unique // شماره حساب
+  iban          String  @unique // شماره شبا
+  cardNumber    String  @unique // شماره کارت
+  cardImage     String? //تصویر کارت بانکی
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -157,9 +162,9 @@ model UserActionLog {
 }
 
 model AppSettings {
-  id                    Int     @id @default(autoincrement())
-  profitMargin          Float   @default(0.5) // درصد سود (مثلاً 0.5 یعنی نیم درصد)
-  orderDisputeThreshold Int     @default(50000) //سقف مبلغ قابل اعتراض
+  id                    Int      @id @default(autoincrement())
+  profitMargin          Float    @default(0.5) // درصد سود (مثلاً 0.5 یعنی نیم درصد)
+  orderDisputeThreshold Int      @default(50000) //سقف مبلغ قابل اعتراض
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 }

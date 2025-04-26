@@ -7,6 +7,7 @@ dotenv.config(); // بارگذاری متغیرهای .env
 
 //import { fetchExchangeRate } from "./utils/scraper";
 import "./jobs/currencyUpdater";
+import { startExpireOrdersInterval } from "./jobs/expireOrdersInterval";
 import exchangeRateRoutes from "./routes/exchangeRateRoutes";
 import userRoutes from "./routes/userRoutes";
 import userProfileRoutes from "./routes/userProfileRoutes";
@@ -58,6 +59,8 @@ app.use("/api/slider", sliderRoutes);
 app.use("/api/settings", appSettingsRoutes);
 app.use("/api/exchangeorder", exchangeOrderRoutes);
 app.use("/api/upload", uploadRoute);
+//اجرای جاب سفارش های منقضی شده
+startExpireOrdersInterval();
 // اجرای سرور روی پورت 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

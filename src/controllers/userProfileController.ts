@@ -68,12 +68,7 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
     const profile = await prisma.userProfile.findUnique({
       where: { userId },
     });
-
-    if (!profile) {
-      return null;
-    }
-
-    res.json(profile);
+    res.status(200).json(profile || null);
   } catch (error) {
     console.log("Error getting profile:", error);
     res.status(500).json({
