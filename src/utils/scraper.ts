@@ -122,7 +122,7 @@ export const fetchExchangeRate = async (): Promise<number> => {
     }
     //cast basePrice to float
     const basePrice_float = parseFloat(basePrice.toString());
-    const settings = await prisma.settings.findFirst();
+    const settings = await prisma.appSettings.findFirst();
     const profitMargin = settings?.profitMargin || 0.05;
     const buyPrice = Math.floor(basePrice_float * (1 - profitMargin));
     const sellPrice = Math.floor(basePrice_float * (1 + profitMargin));
