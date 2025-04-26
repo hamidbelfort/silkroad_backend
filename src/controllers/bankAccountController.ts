@@ -14,9 +14,6 @@ export const createBankAccount = async (
       accountNumber,
       iban,
       cardNumber,
-      expiryYear,
-      expiryMonth,
-      cvv2,
       cardImage,
     } = req.body;
     const userId = req.user?.id; // مقدار کاربر از میدلور استخراج می‌شود
@@ -36,9 +33,6 @@ export const createBankAccount = async (
         accountNumber,
         iban,
         cardNumber,
-        expiryYear,
-        expiryMonth,
-        cvv2,
         cardImage,
       },
     });
@@ -70,9 +64,6 @@ export const updateBankAccount = async (
       accountNumber,
       iban,
       cardNumber,
-      expiryYear,
-      expiryMonth,
-      cvv2,
       cardImage,
     } = req.body;
 
@@ -95,9 +86,6 @@ export const updateBankAccount = async (
         accountNumber,
         iban,
         cardNumber,
-        expiryYear,
-        expiryMonth,
-        cvv2,
         cardImage,
       },
     });
