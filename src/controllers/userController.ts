@@ -9,7 +9,7 @@ export const registerUser = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  const { fullname, email, password } = req.body;
+  const { fullname, email, phone, password } = req.body;
 
   try {
     // چک کردن وجود کاربر با ایمیل یا یوزرنیم مشابه
@@ -21,11 +21,23 @@ export const registerUser = async (
 
     if (existingUser) {
       return res.status(400).json({
+        success: false,
         message:
           "Another user has been registered using this email",
       });
     }
-
+    const existingPhone = await prisma.user.findUnique({
+      where: {
+        phone,
+      },
+    });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Another user has been registered using this phone number",
+      });
+    }
     // هش کردن رمز عبور
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -33,6 +45,7 @@ export const registerUser = async (
     const newUser = await prisma.user.create({
       data: {
         fullname,
+        phone,
         email,
         password: hashedPassword,
       },
@@ -40,12 +53,14 @@ export const registerUser = async (
     //remove password from response
     const { password: _, ...userWithoutPassword } = newUser;
     return res.status(201).json({
+      success: true,
       message: "User account created successfully.",
       user: userWithoutPassword,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
+      success: false,
       message: "Error Occured while registering new user.",
     });
   }
@@ -227,6 +242,27 @@ export const getUser = async (
         .json({ message: "User not found." });
     }
     return res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Error occured while getting user.",
+    });
+  }
+};
+export const getUserEmail = async (
+  req: Request,
+  res: Response
+) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        fullname: true,
+        email: true,
+      },
+    });
+    return res.status(200).json(user || null);
   } catch (error) {
     console.error(error);
     return res.status(500).json({
