@@ -8,7 +8,7 @@ import { getUserEmail } from "./userController";
 export const createExchangeOrder = async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const {
       userId,
