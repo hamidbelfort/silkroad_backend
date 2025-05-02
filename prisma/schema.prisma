@@ -85,9 +85,9 @@ model BankAccount {
   userId        String
   bankName      String? // نام بانک
   accountOwner  String // صاحب حساب
-  accountNumber String  @unique // شماره حساب
-  iban          String  @unique // شماره شبا
-  cardNumber    String  @unique // شماره کارت
+  accountNumber String?  @unique // شماره حساب
+  iban          String?  @unique // شماره شبا
+  cardNumber    String?  @unique // شماره کارت
   cardImage     String? //تصویر کارت بانکی
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
