@@ -20,7 +20,7 @@ export const createExchangeOrder = async (
     } = req.body;
 
     // 1. استعلام کاربر از دیتابیس
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: {
         fullname: true,
@@ -29,9 +29,7 @@ export const createExchangeOrder = async (
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: true, message: "User not found" });
+      return res.status(404).json({ success: true, message: "User not found" });
     }
 
     // 2. ثبت سفارش در دیتابیس
@@ -50,22 +48,14 @@ export const createExchangeOrder = async (
     });
 
     // 3. تعیین نوع ایمیل
-    const templateType = isDisputed
-      ? "reviewNeeded"
-      : "confirmOrder";
-    const subject = generateEmailSubject(
-      templateType,
-      language
-    );
+    const templateType = isDisputed ? "reviewNeeded" : "confirmOrder";
+    const subject = generateEmailSubject(templateType, language);
 
-    const htmlContent = generateEmailTemplate(
-      templateType,
-      {
-        customerName: user.fullname!,
-        orderId: order.id,
-        language,
-      }
-    );
+    const htmlContent = generateEmailTemplate(templateType, {
+      customerName: user.fullname!,
+      orderId: order.id,
+      language,
+    });
 
     // 4. ارسال ایمیل
     await sendCustomEmail({
@@ -89,10 +79,7 @@ export const createExchangeOrder = async (
 };
 
 // دریافت سفارش بر اساس آیدی
-export const getExchangeOrder = async (
-  req: Request,
-  res: Response
-) => {
+export const getExchangeOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const order = await prisma.exchangeOrder.findUnique({
@@ -128,10 +115,7 @@ export const getExchangeOrdersByUserId = async (
   }
 };
 // به‌روزرسانی سفارش (ثبت شماره پیگیری پرداخت)
-export const updatePaymentRef = async (
-  req: Request,
-  res: Response
-) => {
+export const updatePaymentRef = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { paymentRef } = req.body;
