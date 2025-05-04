@@ -13,8 +13,7 @@ export const createBankAccount = async (
       accountOwner,
       accountNumber,
       iban,
-      cardNumber,
-      cardImage,
+      cardNumber = "--",
     } = req.body;
     const userId = req.user?.id; // مقدار کاربر از میدلور استخراج می‌شود
 
@@ -33,7 +32,6 @@ export const createBankAccount = async (
         accountNumber,
         iban,
         cardNumber,
-        cardImage,
       },
     });
 
@@ -53,7 +51,37 @@ export const createBankAccount = async (
     });
   }
 };
+export const attachImage = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { bankCardId, imageUrl } = req.body;
 
+    if (!bankCardId || !imageUrl) {
+      return res.status(400).json({
+        error: "bankCardId or imageUrl is missing",
+      });
+    }
+
+    // به‌روزرسانی رکورد کارت بانکی با URL تصویر
+    await prisma.bankAccount.update({
+      data: { cardImage: imageUrl },
+      where: { id: bankCardId },
+    });
+    return res.status(200).json({
+      success: true,
+      message: "Card image added to bank account",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message:
+        "Error while attaching image to bank account",
+    });
+  }
+};
 // ویرایش اطلاعات حساب بانکی
 export const updateBankAccount = async (
   req: AuthRequest,

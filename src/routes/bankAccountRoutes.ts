@@ -39,4 +39,9 @@ router.get(
   bankAccountController.getAllBankAccounts
 );
 
+router.post(
+  "/attachImage",
+  authenticateUser,
+  bankAccountController.attachImage
+);
 export default router;

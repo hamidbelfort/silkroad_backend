@@ -14,7 +14,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
+model Users {
   id                String   @id @default(uuid()) // شناسه یکتا
   fullname          String?
   email             String   @unique // ایمیل (یونیک)
@@ -58,7 +58,7 @@ model UserProfile {
   whatsapp String? // شماره واتس‌اپ
   wechat   String? // آیدی وی‌چت
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ExchangeOrder {
@@ -77,7 +77,7 @@ model ExchangeOrder {
   // bankAccount
   bankAccount BankAccount @relation(fields: [bankAccountId], references: [id])
   //user
-  user        User        @relation(fields: [userId], references: [id])
+  user        Users        @relation(fields: [userId], references: [id])
 }
 
 model BankAccount {
@@ -90,7 +90,7 @@ model BankAccount {
   cardNumber    String?  @unique // شماره کارت
   cardImage     String? //تصویر کارت بانکی
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   ExchangeOrder ExchangeOrder[]
 }
@@ -155,7 +155,7 @@ model ExchangeRate {
 model UserActionLog {
   id          String   @id @default(uuid()) // شناسه یکتا
   userId      String // کد کاربر
-  user        User     @relation(fields: [userId], references: [id]) // ارتباط یک به چند با مدل User
+  user        Users     @relation(fields: [userId], references: [id]) // ارتباط یک به چند با مدل User
   action      String // نوع عملیات (ورود، سفارش، تغییر رمز و ...)
   description String? // توضیحات اضافه (اختیاری)
   date        DateTime @default(now()) // تاریخ و زمان عملیات
