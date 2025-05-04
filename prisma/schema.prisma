@@ -77,7 +77,7 @@ model ExchangeOrder {
   // bankAccount
   bankAccount BankAccount @relation(fields: [bankAccountId], references: [id])
   //user
-  user        Users        @relation(fields: [userId], references: [id])
+  user        Users       @relation(fields: [userId], references: [id])
 }
 
 model BankAccount {
@@ -85,9 +85,9 @@ model BankAccount {
   userId        String
   bankName      String? // نام بانک
   accountOwner  String // صاحب حساب
-  accountNumber String?  @unique // شماره حساب
-  iban          String?  @unique // شماره شبا
-  cardNumber    String?  @unique // شماره کارت
+  accountNumber String? @unique // شماره حساب
+  iban          String? @unique // شماره شبا
+  cardNumber    String? @unique // شماره کارت
   cardImage     String? //تصویر کارت بانکی
 
   user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -155,10 +155,19 @@ model ExchangeRate {
 model UserActionLog {
   id          String   @id @default(uuid()) // شناسه یکتا
   userId      String // کد کاربر
-  user        Users     @relation(fields: [userId], references: [id]) // ارتباط یک به چند با مدل User
+  user        Users    @relation(fields: [userId], references: [id]) // ارتباط یک به چند با مدل User
   action      String // نوع عملیات (ورود، سفارش، تغییر رمز و ...)
   description String? // توضیحات اضافه (اختیاری)
   date        DateTime @default(now()) // تاریخ و زمان عملیات
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
 }
 
 model AppSettings {

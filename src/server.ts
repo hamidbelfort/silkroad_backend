@@ -22,6 +22,7 @@ import appSettingsRoutes from "./routes/appSettingsRoutes";
 import emailRoutes from "./routes/emailRoutes";
 import uploadRoute from "./routes/upload";
 import uploadSupabase from "./routes/uploadSup";
+import contactRoutes from "./routes/contactRoutes";
 const app = express();
 //کانفیگ cors
 const allowedOrigins = [
@@ -62,6 +63,7 @@ app.use("/api/exchangeorder", exchangeOrderRoutes);
 app.use("/api/email", emailRoutes);
 app.use("/api/upload", uploadRoute);
 app.use("/api/upload2", uploadSupabase);
+app.use("/api/contact", contactRoutes);
 //اجرای جاب سفارش های منقضی شده
 startExpireOrdersInterval();
 // اجرای سرور روی پورت 3000
