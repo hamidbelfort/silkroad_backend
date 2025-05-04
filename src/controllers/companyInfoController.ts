@@ -10,41 +10,33 @@ export const createOrUpdateCompanyInfo = async (
     const { name, slogan, logo } = req.body;
 
     // Check if company info already exists (only one record in the DB)
-    const existingCompanyInfo =
-      await prisma.companyInfo.findFirst();
+    const existingCompanyInfo = await prisma.companyInfo.findFirst();
 
     if (existingCompanyInfo) {
       // If company info exists, update it
-      const updatedCompanyInfo =
-        await prisma.companyInfo.update({
-          where: { id: existingCompanyInfo.id },
-          data: {
-            name,
-            slogan,
-            logo,
-          },
-        });
+      const updatedCompanyInfo = await prisma.companyInfo.update({
+        where: { id: existingCompanyInfo.id },
+        data: {
+          name,
+          slogan,
+          logo,
+        },
+      });
       return res.json(updatedCompanyInfo);
     } else {
       // If no company info exists, create a new one
-      const newCompanyInfo =
-        await prisma.companyInfo.create({
-          data: {
-            name,
-            slogan,
-            logo,
-          },
-        });
+      const newCompanyInfo = await prisma.companyInfo.create({
+        data: {
+          name,
+          slogan,
+          logo,
+        },
+      });
       return res.status(201).json(newCompanyInfo);
     }
   } catch (error) {
-    console.error(
-      "Error creating/updating company info:",
-      error
-    );
-    return res
-      .status(500)
-      .json({ message: "Server error" });
+    console.error("Error creating/updating company info:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -54,18 +46,15 @@ export const getCompanyInfo = async (
   res: Response
 ): Promise<any> => {
   try {
-    const companyInfo =
-      await prisma.companyInfo.findFirst();
+    const companyInfo = await prisma.companyInfo.findFirst();
     if (!companyInfo) {
       return res
         .status(404)
-        .json({ message: "Company information not found" });
+        .json({ success: false, message: "Company information not found" });
     }
     return res.json(companyInfo);
   } catch (error) {
     console.error("Error fetching company info:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };

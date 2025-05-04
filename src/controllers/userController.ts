@@ -13,7 +13,7 @@ export const registerUser = async (
 
   try {
     // چک کردن وجود کاربر با ایمیل یا یوزرنیم مشابه
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: {
         email,
       },
@@ -22,11 +22,10 @@ export const registerUser = async (
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message:
-          "Another user has been registered using this email",
+        message: "Another user has been registered using this email",
       });
     }
-    const existingPhone = await prisma.user.findUnique({
+    const existingPhone = await prisma.users.findUnique({
       where: {
         phone,
       },
@@ -34,15 +33,14 @@ export const registerUser = async (
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message:
-          "Another user has been registered using this phone number",
+        message: "Another user has been registered using this phone number",
       });
     }
     // هش کردن رمز عبور
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // ثبت کاربر جدید در دیتابیس
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.users.create({
       data: {
         fullname,
         phone,
@@ -65,21 +63,16 @@ export const registerUser = async (
     });
   }
 };
-export const getUserLanguage = async (
-  req: any,
-  res: any
-) => {
+export const getUserLanguage = async (req: any, res: any) => {
   const userId = req.user?.id; // از middleware گرفته می‌شه
   const { language } = req.body;
 
   if (!["en", "zh"].includes(language)) {
-    return res
-      .status(400)
-      .json({ success: false, error: "Invalid language" });
+    return res.status(400).json({ success: false, error: "Invalid language" });
   }
 
   try {
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: userId },
       data: { preferredLanguage: language },
     });
@@ -89,44 +82,31 @@ export const getUserLanguage = async (
       message: "Language updated successfully",
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, error: "Server error" });
+    return res.status(500).json({ success: false, error: "Server error" });
   }
 };
 // 2. تابع لاگین (Login)
-export const loginUser = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
+export const loginUser = async (req: Request, res: Response): Promise<any> => {
   const { email, password } = req.body;
 
   try {
     // چک کردن وجود کاربر با ایمیل
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email },
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "User not found" });
+      return res.status(400).json({ message: "User not found" });
     }
 
     // مقایسه رمز عبور وارد شده با رمز عبور هش‌شده در دیتابیس
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res
-        .status(400)
-        .json({ message: "Email or Password is wrong." });
+      return res.status(400).json({ message: "Email or Password is wrong." });
     }
     if (!user.isActive) {
       return res.status(400).json({
-        message:
-          "Your account is deactivated. Please contact support.",
+        message: "Your account is deactivated. Please contact support.",
       });
     }
     await logUserAction({
@@ -134,13 +114,9 @@ export const loginUser = async (
       action: "Login User",
       description: `User ${user.fullname} logged in successfully.`,
     });
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET!,
-      {
-        expiresIn: "1d", // اعتبار یک روزه
-      }
-    );
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+      expiresIn: "1d", // اعتبار یک روزه
+    });
     // موفقیت‌آمیز بودن ورود کاربر
     return res.status(200).json({
       message: "You have successfully signed in.",
@@ -151,9 +127,7 @@ export const loginUser = async (
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Error occured while loggin in." });
+    return res.status(500).json({ message: "Error occured while loggin in." });
   }
 };
 
@@ -166,35 +140,25 @@ export const changePassword = async (
 
   try {
     // چک کردن وجود کاربر
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "User not found." });
+      return res.status(400).json({ message: "User not found." });
     }
 
     // مقایسه رمز عبور قبلی با رمز عبور در دیتابیس
-    const isOldPasswordValid = await bcrypt.compare(
-      oldPassword,
-      user.password
-    );
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isOldPasswordValid) {
-      return res
-        .status(400)
-        .json({ message: "Old password is wrong!" });
+      return res.status(400).json({ message: "Old password is wrong!" });
     }
 
     // هش کردن رمز عبور جدید
-    const hashedNewPassword = await bcrypt.hash(
-      newPassword,
-      12
-    );
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
     // بروزرسانی رمز عبور
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: userId },
       data: { password: hashedNewPassword },
     });
@@ -214,14 +178,11 @@ export const changePassword = async (
     });
   }
 };
-export const getUser = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
+export const getUser = async (req: Request, res: Response): Promise<any> => {
   const { id } = req.params;
   console.log(id);
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id },
       select: {
         id: true,
@@ -237,9 +198,7 @@ export const getUser = async (
       },
     }); // چک کردن وجود کاربر با آیدی
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found." });
+      return res.status(404).json({ message: "User not found." });
     }
     return res.status(200).json(user);
   } catch (error) {
@@ -249,13 +208,10 @@ export const getUser = async (
     });
   }
 };
-export const getUserEmail = async (
-  req: Request,
-  res: Response
-) => {
+export const getUserEmail = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id },
       select: {
         fullname: true,
