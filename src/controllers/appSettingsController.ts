@@ -24,13 +24,22 @@ export const updateAppSettings = async (
   res: Response
 ) => {
   try {
-    const { orderDisputeThreshold } = req.body;
+    const {
+      orderDisputeThreshold,
+      adminEmail,
+      profitMargin,
+    } = req.body;
 
     const updatedSettings = await prisma.appSettings.upsert(
       {
         where: { id: 1 },
-        update: { orderDisputeThreshold },
-        create: { id: 1, orderDisputeThreshold },
+        update: { orderDisputeThreshold, adminEmail },
+        create: {
+          id: 1,
+          orderDisputeThreshold,
+          adminEmail,
+          profitMargin,
+        },
       }
     );
 
