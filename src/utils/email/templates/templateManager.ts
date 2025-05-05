@@ -3,13 +3,15 @@ import { rejectOrderTemplate } from "./rejectOrderTemplate";
 import { reviewNeededTemplate } from "./reviewNeededTemplate";
 import { resetPasswordTemplate } from "./resetPasswordTemplate";
 import { orderDetailsTemplate } from "./orderDetailsTemplate";
+import { contactMessageTemplate } from "./contactMessageTemplate";
 
 type TemplateTypes =
   | "confirmOrder"
   | "rejectOrder"
   | "reviewNeeded"
   | "resetPassword"
-  | "orderDetails";
+  | "orderDetails"
+  | "contactMessage";
 
 type LanguageTypes = "fa" | "en" | "zh";
 
@@ -45,13 +47,22 @@ interface OrderDetailsOptions {
   status: string;
   language: LanguageTypes;
 }
+interface ContactMessageOptions {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  language: LanguageTypes;
+}
 
 type TemplateOptions =
   | ConfirmOrderOptions
   | RejectOrderOptions
   | ReviewNeededOptions
   | ResetPasswordOptions
-  | OrderDetailsOptions;
+  | OrderDetailsOptions
+  | ContactMessageOptions;
 
 export function generateEmailTemplate(
   templateType: TemplateTypes,
@@ -77,6 +88,10 @@ export function generateEmailTemplate(
     case "orderDetails":
       return orderDetailsTemplate(
         options as OrderDetailsOptions
+      );
+    case "contactMessage":
+      return contactMessageTemplate(
+        options as ContactMessageOptions
       );
     default:
       return "";

@@ -3,7 +3,8 @@ type TemplateTypes =
   | "rejectOrder"
   | "reviewNeeded"
   | "resetPassword"
-  | "orderDetails";
+  | "orderDetails"
+  | "contactMessage";
 
 type LanguageTypes = "fa" | "en" | "zh";
 
@@ -40,6 +41,11 @@ export function generateEmailSubject(
       if (language === "fa") return "جزئیات سفارش شما 📦";
       if (language === "en") return "Your Order Details 📦";
       if (language === "zh") return "您的订单详情 📦";
+      break;
+    case "contactMessage":
+      if (language === "fa") return "جزئیات پیام 📧";
+      if (language === "en") return "Message Details 📧";
+      if (language === "zh") return "消息详细信息 📧";
       break;
     default:
       return "";

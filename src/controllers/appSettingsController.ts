@@ -55,3 +55,20 @@ export const updateAppSettings = async (
     });
   }
 };
+export const getAdminEmail = async (): Promise<
+  string | null
+> => {
+  try {
+    const res = await prisma.appSettings.findFirst({
+      select: { adminEmail: true },
+    });
+    return res?.adminEmail || null;
+  } catch (err) {
+    let errMessage = "";
+    if (err instanceof Error) {
+      errMessage = err.message;
+    }
+    console.log(`Error in email Inquiry :${errMessage}`);
+    return null;
+  }
+};

@@ -9,6 +9,7 @@ SMTP_PASS=your-app-password
 SUPABASE_URL=""
 SUPABASE_ANON_KEY="" //FIND IT IN API SETTINGS
 SUPABASE_SERVICE_ROLE_KEY=""
+RECAPTCHA_SECRET_KEY=""
 PORT=3000
 //Description for supabase configration
 1-don use any anticensorship or dns changer for updating database
