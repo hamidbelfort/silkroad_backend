@@ -169,12 +169,27 @@ model ContactMessage {
   message   String
   createdAt DateTime @default(now())
 }
+enum SettingGroup {
+  GENERAL
+  EMAIL
+  SECURITY
+  // می‌تونی دسته‌های بعدی رو اینجا اضافه کنی
+}
 
-model AppSettings {
-  id                    Int      @id @default(autoincrement())
-  profitMargin          Float    @default(0.5) // درصد سود (مثلاً 0.5 یعنی نیم درصد)
-  orderDisputeThreshold Int      @default(50000) //سقف مبلغ قابل اعتراض
-  adminEmail            String?  //آدرس ایمیل ادمین
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+enum SettingKey {
+  PROFIT_MARGIN
+  ADMIN_EMAIL
+  ORDER_DISPUTE_THRESHOLD
+  SMTP_HOST
+  SMTP_PORT
+  SENDER_EMAIL
+  // بقیه تنظیمات اینجا اضافه می‌شن
+}
+
+model Setting {
+  id        Int           @id @default(autoincrement())
+  key       SettingKey    @unique
+  value     String
+  group     SettingGroup
+  updatedAt DateTime      @updatedAt
 }

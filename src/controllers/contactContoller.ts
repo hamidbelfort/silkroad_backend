@@ -2,7 +2,7 @@ import prisma from "../config/prismaClient";
 import { Request, Response } from "express";
 import { generateEmailTemplate } from "../utils/email/templates/templateManager";
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
-import { getAdminEmail } from "./appSettingsController";
+import { getAdminEmail } from "./settingsController";
 import { sendCustomEmail } from "../utils/email/sendCustomEmail";
 export const createContactMessage = async (
   req: Request,
@@ -18,12 +18,10 @@ export const createContactMessage = async (
       token,
     } = req.body;
     if (!token)
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Missing CAPTCHA token",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Missing CAPTCHA token",
+      });
 
     const verifyRes = await fetch(
       `https://www.google.com/recaptcha/api/siteverify`,
@@ -40,12 +38,10 @@ export const createContactMessage = async (
     const result = await verifyRes.json();
 
     if (!result.success) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "CAPTCHA validation failed",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "CAPTCHA validation failed",
+      });
     }
     if (!name || !email || !subject || !message) {
       return res.status(400).json({
