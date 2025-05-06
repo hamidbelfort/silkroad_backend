@@ -126,7 +126,8 @@ export const fetchExchangeRate = async (): Promise<number> => {
     //const settings = await prisma.appSettings.findFirst();
     //const profitMargin = settings?.profitMargin || 0.05;
     //get profit margin from database
-    const profitMargin = await getProfitMargin();
+    const _profitMargin = await getProfitMargin();
+    const profitMargin = _profitMargin / 100;
     const buyPrice = Math.floor(basePrice_float * (1 - profitMargin));
     const sellPrice = Math.floor(basePrice_float * (1 + profitMargin));
     const exchangeRate = await prisma.exchangeRate.create({
