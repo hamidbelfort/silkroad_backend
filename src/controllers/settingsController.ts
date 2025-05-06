@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/prismaClient";
 import { SettingKey } from "@prisma/client";
-
+import { convertToNumber } from "../utils/helpers";
 export const getSettingByKey = async (
   req: Request,
   res: Response
