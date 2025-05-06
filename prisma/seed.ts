@@ -8,7 +8,7 @@ async function main() {
     data: [
       {
         key: "PROFIT_MARGIN",
-        value: "0.15",
+        value: "15",
         group: "GENERAL",
       },
       {
@@ -18,7 +18,7 @@ async function main() {
       },
       {
         key: "ORDER_DISPUTE_THRESHOLD",
-        value: "60",
+        value: "50000",
         group: "GENERAL",
       },
       {

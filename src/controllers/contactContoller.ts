@@ -4,6 +4,7 @@ import { generateEmailTemplate } from "../utils/email/templates/templateManager"
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
 import { getAdminEmail } from "./settingsController";
 import { sendCustomEmail } from "../utils/email/sendCustomEmail";
+import crypto from "crypto";
 export const createContactMessage = async (
   req: Request,
   res: Response
@@ -15,34 +16,22 @@ export const createContactMessage = async (
       subject,
       message,
       language = "en",
-      token,
+      captchaAnswer,
+      captchaHash,
     } = req.body;
-    if (!token)
-      return res.status(400).json({
-        success: false,
-        message: "Missing CAPTCHA token",
-      });
+    //verify captcha
+    const submitted = captchaAnswer.trim().toUpperCase();
+    const calculatedHash = crypto
+      .createHash("sha256")
+      .update(submitted)
+      .digest("hex");
 
-    const verifyRes = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/x-www-form-urlencoded",
-        },
-        body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}&remoteip=${req.ip}`,
-      }
-    );
-
-    const result = await verifyRes.json();
-
-    if (!result.success) {
-      return res.status(403).json({
-        success: false,
-        message: "CAPTCHA validation failed",
-      });
+    if (calculatedHash !== captchaHash) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid captcha" });
     }
+
     if (!name || !email || !subject || !message) {
       return res.status(400).json({
         success: false,
@@ -56,21 +45,15 @@ export const createContactMessage = async (
     //send email to admin
     const adminEmail = await getAdminEmail();
     if (adminEmail && adminEmail !== undefined) {
-      const mailSubject = generateEmailSubject(
-        "contactMessage",
-        language
-      );
-      const htmlContent = generateEmailTemplate(
-        "contactMessage",
-        {
-          id: newMessage.id,
-          name,
-          email,
-          subject,
-          message,
-          language,
-        }
-      );
+      const mailSubject = generateEmailSubject("contactMessage", language);
+      const htmlContent = generateEmailTemplate("contactMessage", {
+        id: newMessage.id,
+        name,
+        email,
+        subject,
+        message,
+        language,
+      });
       await sendCustomEmail({
         to: adminEmail,
         subject: mailSubject,

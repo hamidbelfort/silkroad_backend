@@ -11,14 +11,14 @@ export const getSettingByKey = async (
   if (!(key in SettingKey)) {
     return res
       .status(400)
-      .json({ message: "کلید تنظیمات نامعتبر است" });
+      .json({ success: false, message: "Setting key is invalid" });
   }
 
   const settingKey = key as SettingKey;
   if (!key) {
     return res
       .status(400)
-      .json({ message: "کلید تنظیمات اجباری است" });
+      .json({ success: false, message: "Setting key is mandatory" });
   }
 
   try {
@@ -29,13 +29,13 @@ export const getSettingByKey = async (
     if (!setting) {
       return res
         .status(404)
-        .json({ message: `تنظیم با کلید ${key} یافت نشد` });
+        .json({ message: `Setting with ${key} did not found` });
     }
 
     return res.json(setting);
   } catch (err) {
     return res.status(500).json({
-      message: "خطا در دریافت تنظیمات",
+      message: "Error getting setting key",
       error: err,
     });
   }
@@ -48,20 +48,14 @@ export const setSettingByKey = async (
   if (!(key in SettingKey)) {
     return res
       .status(400)
-      .json({ message: "کلید تنظیمات نامعتبر است" });
+      .json({ success: false, message: "Setting key is invalid" });
   }
 
   const settingKey = key as SettingKey;
   const { value } = req.body;
 
-  if (
-    !key ||
-    typeof value !== "string" ||
-    value.trim() === ""
-  ) {
-    return res
-      .status(400)
-      .json({ message: "پارامترهای ورودی نامعتبر هستند" });
+  if (!key || typeof value !== "string" || value.trim() === "") {
+    return res.status(400).json({ message: "Parameters are invalid" });
   }
 
   try {
@@ -71,18 +65,20 @@ export const setSettingByKey = async (
     });
 
     return res.json({
-      message: `تنظیم ${key} با موفقیت ویرایش شد`,
+      success: true,
+      message: `Setting ${key} updated successfully`,
       data: updated,
     });
   } catch (err: any) {
     if (err.code === "P2025") {
-      return res
-        .status(404)
-        .json({ message: `تنظیم با کلید ${key} پیدا نشد` });
+      return res.status(404).json({
+        success: false,
+        message: `Setting with key ${key} did not found`,
+      });
     }
     return res
       .status(500)
-      .json({ message: "خطای سرور", error: err });
+      .json({ success: false, message: "Server Error", error: err });
   }
 };
 
@@ -95,7 +91,7 @@ export const updateSettings = async (
   if (!Array.isArray(settings)) {
     return res
       .status(400)
-      .json({ message: "ساختار داده نامعتبر است" });
+      .json({ success: false, message: "Data structure is invalid" });
   }
 
   try {
@@ -109,18 +105,18 @@ export const updateSettings = async (
     await prisma.$transaction(updates);
 
     return res.json({
-      message: "تنظیمات با موفقیت به‌روزرسانی شد",
+      success: true,
+      message: "Setting updated successfully",
     });
   } catch (err) {
     return res.status(500).json({
-      message: "خطا در به‌روزرسانی تنظیمات",
+      success: false,
+      message: "Error while updating setting",
       error: err,
     });
   }
 };
-export const getAdminEmail = async (): Promise<
-  string | null
-> => {
+export const getAdminEmail = async (): Promise<string | null> => {
   try {
     const setting = await prisma.setting.findUnique({
       where: { key: "ADMIN_EMAIL" },
@@ -128,11 +124,22 @@ export const getAdminEmail = async (): Promise<
 
     return setting?.value || null;
   } catch (err) {
-    console.error("خطا در دریافت ایمیل مدیر:", err);
+    console.error("Error getting admin email:", err);
     return null;
   }
 };
+export const getProfitMargin = async (): Promise<number | 0> => {
+  try {
+    const setting = await prisma.setting.findUnique({
+      where: { key: "PROFIT_MARGIN" },
+    });
 
+    return convertToNumber(setting?.value);
+  } catch (err) {
+    console.error("Error getting profit margin:", err);
+    return 0;
+  }
+};
 export const getAllSettings = async (
   req: Request,
   res: Response
@@ -142,14 +149,12 @@ export const getAllSettings = async (
     return res.json(settings);
   } catch (err) {
     return res.status(500).json({
-      message: "خطا در دریافت تنظیمات",
+      message: "Error getting settings",
       error: err,
     });
   }
 };
-export const getSettingValue = async (
-  key: string
-): Promise<string | null> => {
+export const getSettingValue = async (key: string): Promise<string | null> => {
   try {
     const settingKey = key as SettingKey;
     const setting = await prisma.setting.findUnique({
@@ -158,10 +163,7 @@ export const getSettingValue = async (
 
     return setting?.value || null;
   } catch (err) {
-    console.error(
-      `خطا در دریافت مقدار تنظیم برای کلید ${key}:`,
-      err
-    );
+    console.error(`Error while getting ${key}:`, err);
     return null;
   }
 };
