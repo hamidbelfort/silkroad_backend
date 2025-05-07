@@ -11,14 +11,20 @@ export const getSettingByKey = async (
   if (!(key in SettingKey)) {
     return res
       .status(400)
-      .json({ success: false, message: "Setting key is invalid" });
+      .json({
+        success: false,
+        message: "Setting key is invalid",
+      });
   }
 
   const settingKey = key as SettingKey;
   if (!key) {
     return res
       .status(400)
-      .json({ success: false, message: "Setting key is mandatory" });
+      .json({
+        success: false,
+        message: "Setting key is mandatory",
+      });
   }
 
   try {
@@ -29,7 +35,9 @@ export const getSettingByKey = async (
     if (!setting) {
       return res
         .status(404)
-        .json({ message: `Setting with ${key} did not found` });
+        .json({
+          message: `Setting with ${key} did not found`,
+        });
     }
 
     return res.json(setting);
@@ -48,14 +56,23 @@ export const setSettingByKey = async (
   if (!(key in SettingKey)) {
     return res
       .status(400)
-      .json({ success: false, message: "Setting key is invalid" });
+      .json({
+        success: false,
+        message: "Setting key is invalid",
+      });
   }
 
   const settingKey = key as SettingKey;
   const { value } = req.body;
 
-  if (!key || typeof value !== "string" || value.trim() === "") {
-    return res.status(400).json({ message: "Parameters are invalid" });
+  if (
+    !key ||
+    typeof value !== "string" ||
+    value.trim() === ""
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Parameters are invalid" });
   }
 
   try {
@@ -78,7 +95,11 @@ export const setSettingByKey = async (
     }
     return res
       .status(500)
-      .json({ success: false, message: "Server Error", error: err });
+      .json({
+        success: false,
+        message: "Server Error",
+        error: err,
+      });
   }
 };
 
@@ -91,7 +112,10 @@ export const updateSettings = async (
   if (!Array.isArray(settings)) {
     return res
       .status(400)
-      .json({ success: false, message: "Data structure is invalid" });
+      .json({
+        success: false,
+        message: "Data structure is invalid",
+      });
   }
 
   try {
@@ -116,7 +140,9 @@ export const updateSettings = async (
     });
   }
 };
-export const getAdminEmail = async (): Promise<string | null> => {
+export const getAdminEmail = async (): Promise<
+  string | null
+> => {
   try {
     const setting = await prisma.setting.findUnique({
       where: { key: "ADMIN_EMAIL" },
@@ -128,7 +154,9 @@ export const getAdminEmail = async (): Promise<string | null> => {
     return null;
   }
 };
-export const getProfitMargin = async (): Promise<number | 0> => {
+export const getProfitMargin = async (): Promise<
+  number | 0
+> => {
   try {
     const setting = await prisma.setting.findUnique({
       where: { key: "PROFIT_MARGIN" },
@@ -145,7 +173,14 @@ export const getAllSettings = async (
   res: Response
 ): Promise<any> => {
   try {
-    const settings = await prisma.setting.findMany();
+    const settings = await prisma.setting.findMany({
+      select: {
+        id: true,
+        key: true,
+        value: true,
+        group: true,
+      },
+    });
     return res.json(settings);
   } catch (err) {
     return res.status(500).json({
@@ -154,7 +189,9 @@ export const getAllSettings = async (
     });
   }
 };
-export const getSettingValue = async (key: string): Promise<string | null> => {
+export const getSettingValue = async (
+  key: string
+): Promise<string | null> => {
   try {
     const settingKey = key as SettingKey;
     const setting = await prisma.setting.findUnique({
