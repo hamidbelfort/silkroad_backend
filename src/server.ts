@@ -21,7 +21,8 @@ import exchangeOrderRoutes from "./routes/exchangeOrderRoutes";
 import appSettingsRoutes from "./routes/appSettingsRoutes";
 import emailRoutes from "./routes/emailRoutes";
 //import uploadRoute from "./routes/upload";
-import uploadRoutes from "./routes/uploadRoutes";
+//import uploadRoutes from "./routes/uploadRoutes";
+import bUpload from "./routes/bupload";
 import contactRoutes from "./routes/contactRoutes";
 import captchRoutes from "./routes/captchaRoutes";
 const app = express();
@@ -63,7 +64,7 @@ app.use("/api/settings", appSettingsRoutes);
 app.use("/api/exchangeorder", exchangeOrderRoutes);
 app.use("/api/email", emailRoutes);
 //app.use("/api/upload", uploadRoute);
-app.use("/api/upload", uploadRoutes);
+app.use("/api/upload", bUpload);
 app.use("/api/contact", contactRoutes);
 app.use("/api/captcha", captchRoutes);
 //اجرای جاب سفارش های منقضی شده
