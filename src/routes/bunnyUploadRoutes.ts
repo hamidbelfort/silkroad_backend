@@ -23,6 +23,6 @@ const upload = multer({
 });
 
 // مسیر آپلود، مثلاً /api/upload/profile
-router.post("/upload/:folder", upload.single("image"), uploadImage);
+router.post("/:folder", upload.single("image"), uploadImage);
 
 export default router;
