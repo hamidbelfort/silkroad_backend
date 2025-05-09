@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { supabase } from "../supabase/client";
-
+import path from "path";
 const getBucketName = (type: string): string => {
   switch (type) {
     case "profile":
@@ -20,39 +20,49 @@ export const uploadImage = async (
 ): Promise<any> => {
   try {
     const file = req.file;
-    const { type, userId } = req.body;
+    const type = req.body.type;
+    const userId = req.body.userId;
 
     if (!file || !type || !userId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing file or type or userId" });
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const bucket = getBucketName(type);
-    const filename = `${userId}_${Date.now()}_${type}`;
-    const path = `${type}/${filename}`;
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const filename = `${userId}_${timestamp}${ext}`;
 
-    const { error } = await supabase.storage
+    let filePath = "";
+    if (type === "card") {
+      filePath = `${userId}/${filename}`;
+    } else {
+      filePath = filename; // بدون زیرپوشه
+    }
+
+    const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(path, file.buffer, {
-        upsert: true,
+      .upload(filePath, file.buffer, {
         contentType: file.mimetype,
+        cacheControl: "3600",
+        upsert: true,
         metadata: {
-          user_id: userId, // 👈 این خط مهمه برای کنترل دسترسی با RLS
+          user_id: userId,
         },
       });
 
     if (error) throw error;
 
-    const publicUrl = supabase.storage.from(bucket).getPublicUrl(path)
+    const publicUrl = supabase.storage.from(bucket).getPublicUrl(filePath)
       .data.publicUrl;
+
     return res
-      .status(201)
+      .status(200)
       .json({ success: true, message: "Uploaded", url: publicUrl });
-  } catch (err) {
+  } catch (error) {
+    console.error(error);
     return res
       .status(500)
-      .json({ success: false, message: "Upload failed", error: err });
+      .json({ success: false, message: "Upload failed", error });
   }
 };
 
