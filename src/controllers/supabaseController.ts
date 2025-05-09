@@ -1,10 +1,17 @@
 import { Request, Response } from "express";
 import { supabase } from "../supabase/client";
 
-const getBucketName = (type: "profile" | "slider" | "card") => {
-  if (type === "profile") return "profile";
-  if (type === "slider") return "slider";
-  return "bank-card";
+const getBucketName = (type: string): string => {
+  switch (type) {
+    case "profile":
+      return "profile";
+    case "slide":
+      return "slide";
+    case "card":
+      return "bank-card";
+    default:
+      throw new Error("Invalid image type");
+  }
 };
 
 export const uploadImage = async (
@@ -22,7 +29,7 @@ export const uploadImage = async (
     }
 
     const bucket = getBucketName(type);
-    const filename = `${userId}_${Date.now()}_${file.originalname}`;
+    const filename = `${userId}_${Date.now()}_${type}`;
     const path = `${type}/${filename}`;
 
     const { error } = await supabase.storage
