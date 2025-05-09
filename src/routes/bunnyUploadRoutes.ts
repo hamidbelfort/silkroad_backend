@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import { uploadImage } from "../controllers/bunnyUploadController";
-
+import { authenticateUser } from "../middleware/authMiddleware";
 const router = express.Router();
 
 // تنظیم Multer برای دریافت فایل‌ها
@@ -23,6 +23,6 @@ const upload = multer({
 });
 
 // مسیر آپلود، مثلاً /api/upload/profile
-router.post("/:folder", upload.single("image"), uploadImage);
+router.post("/:folder", authenticateUser, upload.single("image"), uploadImage);
 
 export default router;
