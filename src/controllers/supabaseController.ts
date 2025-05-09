@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { supabase } from "../supabase/client";
 
-const getBucketName = (type: "profile" | "slide" | "card") => {
-  if (type === "profile") return "profile-pictures";
-  if (type === "slide") return "slides";
-  return "bank-cards";
+const getBucketName = (type: "profile" | "slider" | "card") => {
+  if (type === "profile") return "profile";
+  if (type === "slider") return "slider";
+  return "bank-card";
 };
 
 export const uploadImage = async (

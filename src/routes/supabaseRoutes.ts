@@ -11,7 +11,7 @@ import { authenticateUser } from "../middleware/authMiddleware";
 const router = express.Router();
 
 router.post(
-  "/upload",
+  "/",
   authenticateUser,
   uploadMiddleware.single("file"),
   uploadImage
