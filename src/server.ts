@@ -22,7 +22,7 @@ import appSettingsRoutes from "./routes/appSettingsRoutes";
 import emailRoutes from "./routes/emailRoutes";
 //import uploadRoute from "./routes/upload";
 //import uploadRoutes from "./routes/uploadRoutes";
-import bUpload from "./routes/bupload";
+import bUpload from "./routes/bunnyUploadRoutes";
 import contactRoutes from "./routes/contactRoutes";
 import captchRoutes from "./routes/captchaRoutes";
 const app = express();
