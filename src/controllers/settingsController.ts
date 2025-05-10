@@ -3,28 +3,25 @@ import { Request, Response } from "express";
 import prisma from "../config/prismaClient";
 import { SettingKey } from "@prisma/client";
 import { convertToNumber } from "../utils/helpers";
+import { logUserAction } from "../utils/userActionLog";
 export const getSettingByKey = async (
   req: Request,
   res: Response
 ): Promise<any> => {
   const key = req.params.key;
   if (!(key in SettingKey)) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Setting key is invalid",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Setting key is invalid",
+    });
   }
 
   const settingKey = key as SettingKey;
   if (!key) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Setting key is mandatory",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Setting key is mandatory",
+    });
   }
 
   try {
@@ -33,11 +30,9 @@ export const getSettingByKey = async (
     });
 
     if (!setting) {
-      return res
-        .status(404)
-        .json({
-          message: `Setting with ${key} did not found`,
-        });
+      return res.status(404).json({
+        message: `Setting with ${key} did not found`,
+      });
     }
 
     return res.json(setting);
@@ -54,17 +49,15 @@ export const setSettingByKey = async (
 ): Promise<any> => {
   const key = req.params.key;
   if (!(key in SettingKey)) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Setting key is invalid",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Setting key is invalid",
+    });
   }
 
   const settingKey = key as SettingKey;
   const { value } = req.body;
-
+  const userId = (req as any).user?.id;
   if (
     !key ||
     typeof value !== "string" ||
@@ -80,7 +73,13 @@ export const setSettingByKey = async (
       where: { key: settingKey },
       data: { value },
     });
-
+    if (userId) {
+      await logUserAction({
+        userId,
+        action: "UPDATE_SETTING",
+        description: `Updated setting ${key} at ${new Date()}`,
+      });
+    }
     return res.json({
       success: true,
       message: `Setting ${key} updated successfully`,
@@ -93,13 +92,11 @@ export const setSettingByKey = async (
         message: `Setting with key ${key} did not found`,
       });
     }
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server Error",
-        error: err,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err,
+    });
   }
 };
 
@@ -108,14 +105,12 @@ export const updateSettings = async (
   res: Response
 ): Promise<any> => {
   const settings = req.body;
-
+  const userId = (req as any).user?.id;
   if (!Array.isArray(settings)) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Data structure is invalid",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Data structure is invalid",
+    });
   }
 
   try {
@@ -127,7 +122,13 @@ export const updateSettings = async (
     );
 
     await prisma.$transaction(updates);
-
+    if (userId) {
+      await logUserAction({
+        userId,
+        action: "UPDATE_SETTINGS",
+        description: `Updated settings at ${new Date()}`,
+      });
+    }
     return res.json({
       success: true,
       message: "Setting updated successfully",

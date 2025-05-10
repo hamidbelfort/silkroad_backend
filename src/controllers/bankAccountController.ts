@@ -11,7 +11,7 @@ export const createBankAccount = async (
     const {
       bankName,
       accountOwner,
-      accountNumber,
+      accountNumber = "--",
       iban,
       cardNumber = "--",
     } = req.body;
@@ -32,6 +32,7 @@ export const createBankAccount = async (
         accountNumber,
         iban,
         cardNumber,
+        cardImage: null,
       },
     });
 

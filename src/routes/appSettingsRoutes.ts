@@ -5,11 +5,11 @@ import {
   updateSettings,
   getSettingByKey,
 } from "../controllers/settingsController";
-
+import { authenticateUser } from "../middleware/authMiddleware";
 const router = Router();
 
-router.get("/", getAllSettings);
-router.put("/", updateSettings);
+router.get("/", authenticateUser, getAllSettings);
+router.put("/", authenticateUser, updateSettings);
 router.get("/settings/:key", getSettingByKey);
 
 export default router;
