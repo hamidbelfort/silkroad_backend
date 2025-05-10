@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { AuthRequest } from "../types/express";
 import prisma from "../config/prismaClient";
-
+import { BucketName, uploadToSupabase } from "../utils/helpers";
 // ایجاد حساب بانکی جدید
 export const createBankAccount = async (
   req: AuthRequest,
@@ -15,6 +15,7 @@ export const createBankAccount = async (
       iban,
       cardNumber = "--",
     } = req.body;
+    const file = req.file!;
     const userId = req.user?.id; // مقدار کاربر از میدلور استخراج می‌شود
 
     if (!userId) {
@@ -35,17 +36,32 @@ export const createBankAccount = async (
         cardImage: null,
       },
     });
+    if (file) {
+      const { path, url } = await uploadToSupabase({
+        file,
+        bucket: BucketName.BANK_CARD,
+        userId,
+      });
+      await prisma.bankAccount.update({
+        where: { id: newAccount.id },
+        data: {
+          cardImage: path,
+        },
+      });
+      return res.status(201).json({
+        success: true,
+        message: "Bank account created with image successfully",
+        data: newAccount,
+      });
+    }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: "Bank account created successfully",
+      message: "Bank account created without image successfully",
       data: newAccount,
     });
   } catch (error) {
-    console.error(
-      "Error occured while creating back account : ",
-      error
-    );
+    console.error("Error occured while creating back account : ", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -78,8 +94,7 @@ export const attachImage = async (
     console.error(error);
     return res.status(500).json({
       success: false,
-      message:
-        "Error while attaching image to bank account",
+      message: "Error while attaching image to bank account",
     });
   }
 };
@@ -107,8 +122,7 @@ export const updateBankAccount = async (
     if (!account || account.userId !== userId) {
       return res.status(404).json({
         success: false,
-        message:
-          "Bank account not found or you don't have access permission",
+        message: "Bank account not found or you don't have access permission",
       });
     }
 
@@ -129,10 +143,7 @@ export const updateBankAccount = async (
       message: "Bank account updated successfully",
     });
   } catch (error) {
-    console.error(
-      "Error accoured while updating bank account : ",
-      error
-    );
+    console.error("Error accoured while updating bank account : ", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -156,8 +167,7 @@ export const deleteBankAccount = async (
     if (!account || account.userId !== userId) {
       return res.status(404).json({
         success: false,
-        message:
-          "BankAccont not found or you don't have access permission",
+        message: "BankAccont not found or you don't have access permission",
       });
     }
 
@@ -168,10 +178,7 @@ export const deleteBankAccount = async (
       message: "Bank Account successfully deleted.",
     });
   } catch (error) {
-    console.error(
-      "Error occured while deleting bank account :",
-      error
-    );
+    console.error("Error occured while deleting bank account :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -195,17 +202,13 @@ export const getBankAccount = async (
     if (!account || account.userId !== userId) {
       return res.status(404).json({
         success: false,
-        message:
-          "BankAccont not found or you don't have access permission",
+        message: "BankAccont not found or you don't have access permission",
       });
     }
 
     res.json(account);
   } catch (error) {
-    console.error(
-      "Error occured while getting bank account data :",
-      error
-    );
+    console.error("Error occured while getting bank account data :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -226,10 +229,7 @@ export const getAllBankAccounts = async (
     });
     res.json(accounts);
   } catch (error) {
-    console.error(
-      "Error occured while getting bank account data :",
-      error
-    );
+    console.error("Error occured while getting bank account data :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",
@@ -257,10 +257,7 @@ export const getBankAccountsByUserId = async (
 
     res.json(accounts);
   } catch (error) {
-    console.error(
-      "Error occured while getting bank account data :",
-      error
-    );
+    console.error("Error occured while getting bank account data :", error);
     res.status(500).json({
       success: false,
       message: "Something bad happened",

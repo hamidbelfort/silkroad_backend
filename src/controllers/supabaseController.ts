@@ -1,70 +1,9 @@
 import { Request, Response } from "express";
 import { supabase } from "../supabase/client";
 import path from "path";
-const getBucketName = (type: string): string => {
-  switch (type) {
-    case "profile":
-      return "profile";
-    case "slide":
-      return "slide";
-    case "card":
-      return "bank-card";
-    default:
-      throw new Error("Invalid image type");
-  }
-};
+import { getBucketName } from "../utils/helpers";
+
 //Upload Image to Supabase Storage
-interface UploadParams {
-  file: Express.Multer.File;
-  bucket: string;
-  userId: string;
-  folder?: string; // مثل 'profile', 'slide', یا 'bank-card'
-  prefix?: string; // مثلاً card ID یا user ID
-}
-export async function uploadToSupabase({
-  file,
-  bucket,
-  userId,
-  folder = "",
-  prefix = "",
-}: UploadParams): Promise<{ url: string; path: string }> {
-  const ext = path.extname(file.originalname);
-  const filename = `${prefix}_${Date.now()}${ext}`;
-
-  let filePath = folder
-    ? `${folder}/${filename}`
-    : filename;
-
-  // فقط برای کارت بانکی، زیرپوشه کاربر و metadata ذخیره بشه
-  const isPrivateBucket = bucket === "bank-card";
-
-  if (isPrivateBucket) {
-    filePath = `${userId}/${filename}`;
-  }
-
-  const uploadOptions = {
-    contentType: file.mimetype,
-    upsert: true,
-    ...(isPrivateBucket
-      ? { metadata: { user_id: userId } }
-      : {}),
-  };
-
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, file.buffer, uploadOptions);
-
-  if (uploadError) throw uploadError;
-
-  const { data: publicUrlData } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(filePath);
-
-  return {
-    url: publicUrlData.publicUrl,
-    path: filePath,
-  };
-}
 export const uploadImage = async (
   req: Request,
   res: Response
@@ -75,9 +14,7 @@ export const uploadImage = async (
     const userId = req.body.userId;
 
     if (!file || !type || !userId) {
-      return res
-        .status(400)
-        .json({ message: "Missing required fields" });
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const bucket = getBucketName(type);
@@ -105,33 +42,25 @@ export const uploadImage = async (
 
     if (error) throw error;
 
-    const publicUrl = supabase.storage
-      .from(bucket)
-      .getPublicUrl(filePath).data.publicUrl;
+    const publicUrl = supabase.storage.from(bucket).getPublicUrl(filePath)
+      .data.publicUrl;
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Uploaded",
-        url: publicUrl,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Uploaded",
+      url: publicUrl,
+    });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Upload failed",
-        error,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Upload failed",
+      error,
+    });
   }
 };
 
-export const getImage = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
+export const getImage = async (req: Request, res: Response): Promise<any> => {
   try {
     const { type, filename } = req.params;
     const bucket = getBucketName(type as any);
@@ -141,25 +70,18 @@ export const getImage = async (
       .download(`${type}/${filename}`);
 
     if (error || !data)
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "File not found",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "File not found",
+      });
 
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    res.setHeader(
-      "Content-Type",
-      data.type || "image/jpeg"
-    );
+    res.setHeader("Content-Type", data.type || "image/jpeg");
     return res.send(buffer);
   } catch (err) {
-    return res
-      .status(500)
-      .json({ message: "Fetch failed", error: err });
+    return res.status(500).json({ message: "Fetch failed", error: err });
   }
 };
 
@@ -175,23 +97,18 @@ export const deleteImage = async (
       .from(bucket)
       .remove([`${type}/${filename}`]);
 
-    if (error)
-      return res
-        .status(500)
-        .json({ message: "Delete failed", error });
+    if (error) return res.status(500).json({ message: "Delete failed", error });
 
     return res.json({
       success: true,
       message: "Deleted successfully",
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Delete error",
-        error: err,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Delete error",
+      error: err,
+    });
   }
 };
 
@@ -205,9 +122,7 @@ export const updateImage = async (
     const { filename } = req.params;
 
     if (!file || !type || !userId || !filename)
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing data" });
+      return res.status(400).json({ success: false, message: "Missing data" });
 
     const bucket = getBucketName(type as any);
     const path = `${type}/${filename}`;
@@ -222,23 +137,18 @@ export const updateImage = async (
 
     if (error) throw error;
 
-    const publicUrl = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path).data.publicUrl;
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Updated",
-        url: publicUrl,
-      });
+    const publicUrl = supabase.storage.from(bucket).getPublicUrl(path)
+      .data.publicUrl;
+    return res.status(200).json({
+      success: true,
+      message: "Updated",
+      url: publicUrl,
+    });
   } catch (err) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Update failed",
-        error: err,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Update failed",
+      error: err,
+    });
   }
 };
