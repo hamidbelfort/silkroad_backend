@@ -14,7 +14,9 @@ export const uploadImage = async (
     const userId = req.body.userId;
 
     if (!file || !type || !userId) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ message: "Missing required fields" });
     }
 
     const bucket = getBucketName(type);
@@ -42,8 +44,9 @@ export const uploadImage = async (
 
     if (error) throw error;
 
-    const publicUrl = supabase.storage.from(bucket).getPublicUrl(filePath)
-      .data.publicUrl;
+    const publicUrl = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath).data.publicUrl;
 
     return res.status(200).json({
       success: true,
@@ -60,7 +63,10 @@ export const uploadImage = async (
   }
 };
 
-export const getImage = async (req: Request, res: Response): Promise<any> => {
+export const getImage = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const { type, filename } = req.params;
     const bucket = getBucketName(type as any);
@@ -78,10 +84,15 @@ export const getImage = async (req: Request, res: Response): Promise<any> => {
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    res.setHeader("Content-Type", data.type || "image/jpeg");
+    res.setHeader(
+      "Content-Type",
+      data.type || "image/jpeg"
+    );
     return res.send(buffer);
   } catch (err) {
-    return res.status(500).json({ message: "Fetch failed", error: err });
+    return res
+      .status(500)
+      .json({ message: "Fetch failed", error: err });
   }
 };
 
@@ -97,7 +108,10 @@ export const deleteImage = async (
       .from(bucket)
       .remove([`${type}/${filename}`]);
 
-    if (error) return res.status(500).json({ message: "Delete failed", error });
+    if (error)
+      return res
+        .status(500)
+        .json({ message: "Delete failed", error });
 
     return res.json({
       success: true,
@@ -122,7 +136,9 @@ export const updateImage = async (
     const { filename } = req.params;
 
     if (!file || !type || !userId || !filename)
-      return res.status(400).json({ success: false, message: "Missing data" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing data" });
 
     const bucket = getBucketName(type as any);
     const path = `${type}/${filename}`;
@@ -137,8 +153,9 @@ export const updateImage = async (
 
     if (error) throw error;
 
-    const publicUrl = supabase.storage.from(bucket).getPublicUrl(path)
-      .data.publicUrl;
+    const publicUrl = supabase.storage
+      .from(bucket)
+      .getPublicUrl(path).data.publicUrl;
     return res.status(200).json({
       success: true,
       message: "Updated",
