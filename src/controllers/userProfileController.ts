@@ -3,32 +3,38 @@ import { Request, Response } from "express";
 import prisma from "../config/prismaClient";
 import { logUserAction } from "../utils/userActionLog";
 import { AuthRequest } from "../types/express";
+import {
+  BucketName,
+  uploadToSupabase,
+} from "../utils/helpers";
 export const createProfile = async (
   req: AuthRequest,
   res: Response
 ): Promise<any> => {
   try {
-    const { userId, bio, wechat, whatsapp, address } = req.body;
-    //const userId = req.user?.id; // آی‌دی کاربر از توکن احراز هویت گرفته میشه
+    const { bio, wechat, whatsapp, address } = req.body;
+    const userId = req.user?.id; // آی‌دی کاربر از توکن احراز هویت گرفته میشه
 
     if (!userId) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Unauthorized Attempt" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized Attempt",
+      });
     }
 
     // چک کنه که آیا این کاربر قبلاً پروفایل ساخته یا نه
-    const existingProfile = await prisma.userProfile.findUnique({
-      where: { userId },
-    });
+    const existingProfile =
+      await prisma.userProfile.findUnique({
+        where: { userId },
+      });
 
     if (existingProfile) {
       await prisma.userProfile.update({
-        where: { userId: (req as any).user.id },
+        where: { userId },
         data: { bio, wechat, whatsapp, address },
       });
       await logUserAction({
-        userId: (req as any).user.id,
+        userId: (req as any).user?.id,
         action: "UPDATE_PROFILE",
         description: "Updated profile.",
       });
@@ -59,10 +65,78 @@ export const createProfile = async (
     });
   } catch (error) {
     console.error("Error creating profile:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
-export const getProfile = async (req: Request, res: Response): Promise<any> => {
+export const setProfileImage = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const userId = (req as any).user?.id;
+    const file = req.file!;
+    const { path } = await uploadToSupabase({
+      file,
+      bucket: BucketName.PROFILE,
+      userId,
+    });
+    if (path) {
+      const profile = await prisma.userProfile.findUnique({
+        where: { userId },
+      });
+      if (profile) {
+        const updatedProfile =
+          await prisma.userProfile.update({
+            where: { id: profile.id },
+            data: {
+              avatar: path,
+            },
+          });
+        if (updatedProfile) {
+          return res.status(200).json({
+            success: true,
+            message: "Profile avatar updated sucessfully",
+          });
+        }
+        return res.status(200).json({
+          success: false,
+          message: "Profile avatar update error",
+        });
+      } else {
+        const createdProfile =
+          await prisma.userProfile.create({
+            data: {
+              userId,
+              avatar: path,
+            },
+          });
+        if (createdProfile) {
+          return res.status(200).json({
+            success: true,
+            message: "Profile avatar added successfully",
+          });
+        }
+        return res.status(200).json({
+          success: false,
+          message: "Error while adding profile avatar",
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error creating profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+export const getProfile = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const userId = req.params.id;
     const profile = await prisma.userProfile.findUnique({
@@ -78,7 +152,10 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export const deleteProfile = async (req: Request, res: Response) => {
+export const deleteProfile = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const userId = req.params.id;
     await prisma.userProfile.delete({
