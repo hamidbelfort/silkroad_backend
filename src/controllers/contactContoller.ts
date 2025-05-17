@@ -20,7 +20,7 @@ export const createContactMessage = async (
       captchaHash,
     } = req.body;
     //verify captcha
-    const submitted = captchaAnswer.trim().toUpperCase();
+    const submitted = String(captchaAnswer).trim().toLowerCase();
     const calculatedHash = crypto
       .createHash("sha256")
       .update(submitted)
