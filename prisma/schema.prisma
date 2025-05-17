@@ -169,6 +169,7 @@ model ContactMessage {
   message   String
   createdAt DateTime @default(now())
 }
+
 enum SettingGroup {
   GENERAL
   EMAIL
@@ -182,14 +183,16 @@ enum SettingKey {
   ORDER_DISPUTE_THRESHOLD
   SMTP_HOST
   SMTP_PORT
+  SMTP_USER
+  SMTP_PASS
   SENDER_EMAIL
   // بقیه تنظیمات اینجا اضافه می‌شن
 }
 
 model Setting {
-  id        Int           @id @default(autoincrement())
-  key       SettingKey    @unique
+  id        Int          @id @default(autoincrement())
+  key       SettingKey   @unique
   value     String
   group     SettingGroup
-  updatedAt DateTime      @updatedAt
+  updatedAt DateTime     @updatedAt
 }

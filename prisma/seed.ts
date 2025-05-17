@@ -27,6 +27,8 @@ async function main() {
         group: "EMAIL",
       },
       { key: "SMTP_PORT", value: "587", group: "EMAIL" },
+      { key: "SMTP_USER", value: "", group: "EMAIL" },
+      { key: "SMTP_PASS", value: "", group: "EMAIL" },
       {
         key: "SENDER_EMAIL",
         value: "noreply@example.com",
