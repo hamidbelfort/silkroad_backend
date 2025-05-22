@@ -2,19 +2,16 @@ import prisma from "../config/prismaClient";
 import { Request, Response } from "express";
 import { AuthRequest } from "../types/express";
 import { logUserAction } from "../utils/userActionLog";
-export const createFAQ = async (
-  req: AuthRequest,
-  res: Response
-): Promise<any> => {
+export const createFAQ = async (req: Request, res: Response): Promise<any> => {
   try {
     const count = await prisma.fAQ.count();
-    if (count >= 20) {
+    if (count > 20) {
       return res
         .status(400)
         .json({ success: false, message: "Cannot add more than 20 FAQs." });
     }
     const faq = await prisma.fAQ.create({ data: req.body });
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (userId) {
       await logUserAction({
         userId,
@@ -29,7 +26,7 @@ export const createFAQ = async (
   }
 };
 
-export const getAllFAQs = async (_: Request, res: Response) => {
+export const getAllFAQs = async (req: Request, res: Response) => {
   try {
     const faqs = await prisma.fAQ.findMany();
     res.status(200).json(faqs);
@@ -38,14 +35,14 @@ export const getAllFAQs = async (_: Request, res: Response) => {
   }
 };
 
-export const updateFAQ = async (req: AuthRequest, res: Response) => {
+export const updateFAQ = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const updated = await prisma.fAQ.update({
+    await prisma.fAQ.update({
       where: { id },
       data: req.body,
     });
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (userId) {
       await logUserAction({
         userId,

@@ -56,7 +56,7 @@ app.use("/api/exchange", exchangeRateRoutes);
 app.use("/api/bankaccount", bankAccountRoutes);
 app.use("/api/company", companyInfoRoutes);
 app.use("/api/companyaddress", companyAddressRoutes);
-app.use("/api/faqs", faqRoutes);
+app.use("/api/faq", faqRoutes);
 app.use("/api/companydetails", companyDetailsRoutes);
 app.use("/api/slider", sliderRoutes);
 app.use("/api/settings", appSettingsRoutes);
