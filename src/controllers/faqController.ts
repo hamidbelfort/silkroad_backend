@@ -10,7 +10,13 @@ export const createFAQ = async (req: Request, res: Response): Promise<any> => {
         .status(400)
         .json({ success: false, message: "Cannot add more than 20 FAQs." });
     }
-    const faq = await prisma.fAQ.create({ data: req.body });
+    const { question, answer } = req.body;
+    const faq = await prisma.fAQ.create({
+      data: {
+        question,
+        answer,
+      },
+    });
     const userId = (req as any).user?.id;
     if (userId) {
       await logUserAction({
