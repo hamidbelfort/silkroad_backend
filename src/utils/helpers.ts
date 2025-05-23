@@ -1,9 +1,7 @@
 import path from "path";
 import { supabase } from "./supabaseClient";
 
-export function convertToNumber(
-  value: string | undefined
-): number | 0 {
+export function convertToNumber(value: string | undefined): number | 0 {
   return value !== undefined ? +value : 0;
 }
 export const getBucketName = (type: string): string => {
@@ -43,9 +41,7 @@ export const uploadToSupabase = async ({
   const ext = path.extname(file.originalname);
   const filename = `${prefix}_${Date.now()}${ext}`;
 
-  let filePath = folder
-    ? `${folder}/${filename}`
-    : filename;
+  let filePath = folder ? `${folder}/${filename}` : filename;
 
   // فقط برای کارت بانکی، زیرپوشه کاربر و metadata ذخیره بشه
   const isPrivateBucket = bucket === BucketName.BANK_CARD;
@@ -57,9 +53,7 @@ export const uploadToSupabase = async ({
   const uploadOptions = {
     contentType: file.mimetype,
     upsert: true,
-    ...(isPrivateBucket
-      ? { metadata: { user_id: userId } }
-      : {}),
+    ...(isPrivateBucket ? { metadata: { user_id: userId } } : {}),
   };
 
   const { error: uploadError } = await supabase.storage
@@ -95,9 +89,7 @@ export async function getImageUrl(
   expiresIn = 5 * (60 * 10)
 ): Promise<string | null> {
   if (!imagePath) {
-    console.warn(
-      `No image path provided for user ${userId}`
-    );
+    console.warn(`No image path provided for user ${userId}`);
     return null;
   }
 
@@ -108,23 +100,16 @@ export async function getImageUrl(
         .createSignedUrl(imagePath, expiresIn);
 
       if (error || !data?.signedUrl) {
-        console.error(
-          `Signed URL error for user ${userId}:`,
-          error?.message
-        );
+        console.error(`Signed URL error for user ${userId}:`, error?.message);
         return null;
       }
 
       return data.signedUrl;
     } else {
-      const { data } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(imagePath);
+      const { data } = supabase.storage.from(bucket).getPublicUrl(imagePath);
 
       if (!data?.publicUrl) {
-        console.error(
-          `Public URL error for user ${userId}`
-        );
+        console.error(`Public URL error for user ${userId}`);
         return null;
       }
 
@@ -138,9 +123,9 @@ export async function getImageUrl(
     return null;
   }
 }
-export const deleteImage = async (
-  bucket: BucketName,
-  filePath: string
-) => {
+export const deleteImage = async (bucket: BucketName, filePath: string) => {
   await supabase.storage.from(bucket).remove([filePath]);
+};
+export const generateOTP = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 };

@@ -30,12 +30,24 @@ model Users {
   bankAccounts  BankAccount[]
   UserActionLog UserActionLog[]
   ExchangeOrder ExchangeOrder[]
+  resetTokens   PasswordResetOTP[]
 }
 
 enum Role {
   ADMIN
   OPERATOR
   CUSTOMER
+}
+
+model PasswordResetOTP {
+  id        String   @id @default(uuid()) // شناسه یکتا برای توکن
+  otp       String //رمز بکیار مصرف
+  attempts  Int      @default(0) // تعداد دفعات ورود اشتباه
+  expiresAt DateTime // زمان انقضای توکن
+  createdAt DateTime @default(now()) // زمان ایجاد
+
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String // آیدی کاربر مرتبط
 }
 
 enum OrderStatus {

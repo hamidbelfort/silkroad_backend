@@ -4,7 +4,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prismaClient"; // import prisma client for DB interaction
 import { logUserAction } from "../utils/userActionLog";
-import { BucketName, getImageUrl } from "../utils/helpers";
+import { BucketName, generateOTP, getImageUrl } from "../utils/helpers";
+import { addMinutes } from "date-fns";
+import { generateEmailSubject } from "../utils/email/templates/subjectManager";
+import { generateEmailTemplate } from "../utils/email/templates/templateManager";
+import { sendCustomEmail } from "../utils/email/sendCustomEmail";
 // 1. تابع ثبت‌نام (Register)
 export const registerUser = async (
   req: Request,
@@ -23,8 +27,7 @@ export const registerUser = async (
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message:
-          "Another user has been registered using this email",
+        message: "Another user has been registered using this email",
       });
     }
     const existingPhone = await prisma.users.findUnique({
@@ -35,8 +38,7 @@ export const registerUser = async (
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message:
-          "Another user has been registered using this phone number",
+        message: "Another user has been registered using this phone number",
       });
     }
     // هش کردن رمز عبور
@@ -66,17 +68,12 @@ export const registerUser = async (
     });
   }
 };
-export const getUserLanguage = async (
-  req: any,
-  res: any
-) => {
+export const getUserLanguage = async (req: any, res: any) => {
   const userId = req.user?.id; // از middleware گرفته می‌شه
   const { language } = req.body;
 
   if (!["en", "zh"].includes(language)) {
-    return res
-      .status(400)
-      .json({ success: false, error: "Invalid language" });
+    return res.status(400).json({ success: false, error: "Invalid language" });
   }
 
   try {
@@ -90,16 +87,11 @@ export const getUserLanguage = async (
       message: "Language updated successfully",
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, error: "Server error" });
+    return res.status(500).json({ success: false, error: "Server error" });
   }
 };
 // 2. تابع لاگین (Login)
-export const loginUser = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
+export const loginUser = async (req: Request, res: Response): Promise<any> => {
   const { email, password } = req.body;
 
   try {
@@ -111,23 +103,20 @@ export const loginUser = async (
     if (!user) {
       return res
         .status(400)
-        .json({ message: "User not found" });
+        .json({ success: false, message: "User not found" });
     }
 
     // مقایسه رمز عبور وارد شده با رمز عبور هش‌شده در دیتابیس
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res
         .status(400)
-        .json({ message: "Email or Password is wrong." });
+        .json({ success: false, message: "Email or Password is wrong." });
     }
     if (!user.isActive) {
       return res.status(400).json({
-        message:
-          "Your account is deactivated. Please contact support.",
+        success: false,
+        message: "Your account is deactivated. Please contact support.",
       });
     }
     await logUserAction({
@@ -135,15 +124,12 @@ export const loginUser = async (
       action: "Login User",
       description: `User ${user.fullname} logged in successfully.`,
     });
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET!,
-      {
-        expiresIn: "1d", // اعتبار یک روزه
-      }
-    );
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+      expiresIn: "1d", // اعتبار یک روزه
+    });
     // موفقیت‌آمیز بودن ورود کاربر
     return res.status(200).json({
+      success: true,
       message: "You have successfully signed in.",
       token,
       userId: user.id,
@@ -154,7 +140,7 @@ export const loginUser = async (
     console.error(error);
     return res
       .status(500)
-      .json({ message: "Error occured while loggin in." });
+      .json({ success: false, message: "Error occured while loggin in." });
   }
 };
 
@@ -174,25 +160,19 @@ export const changePassword = async (
     if (!user) {
       return res
         .status(400)
-        .json({ message: "User not found." });
+        .json({ success: false, message: "User not found." });
     }
 
     // مقایسه رمز عبور قبلی با رمز عبور در دیتابیس
-    const isOldPasswordValid = await bcrypt.compare(
-      oldPassword,
-      user.password
-    );
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isOldPasswordValid) {
       return res
         .status(400)
-        .json({ message: "Old password is wrong!" });
+        .json({ success: false, message: "Old password is wrong!" });
     }
 
     // هش کردن رمز عبور جدید
-    const hashedNewPassword = await bcrypt.hash(
-      newPassword,
-      12
-    );
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
     // بروزرسانی رمز عبور
     const updatedUser = await prisma.users.update({
@@ -205,20 +185,80 @@ export const changePassword = async (
       description: `User ${user.fullname} changed their password.`,
     });
     return res.status(200).json({
+      success: true,
       message: "Your password has been changed.",
-      user: updatedUser,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
+      success: false,
       message: "Error occured while changing password",
     });
   }
 };
-export const getUser = async (
+export const requestResetPassword = async (
   req: Request,
   res: Response
 ): Promise<any> => {
+  const { email, language } = req.body;
+
+  if (!email) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
+  }
+
+  try {
+    const user = await prisma.users.findUnique({ where: { email } });
+
+    // حتی اگر کاربر نباشه، پیغام مشابه می‌فرستیم (برای امنیت)
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "If this email is registered, an OTP has been sent.",
+      });
+    }
+
+    // حذف تمام OTPهای قبلی این کاربر
+    await prisma.passwordResetOTP.deleteMany({
+      where: { userId: user.id },
+    });
+
+    // تولید OTP و زمان انقضا
+    const otp = generateOTP();
+    const expiresAt = addMinutes(new Date(), 10); // 10 دقیقه اعتبار
+
+    // ذخیره OTP جدید در دیتابیس
+    await prisma.passwordResetOTP.create({
+      data: {
+        otp,
+        expiresAt,
+        user: { connect: { id: user.id } },
+      },
+    });
+    const mailSubject = generateEmailSubject("resetPassword", language);
+    const htmlContent = generateEmailTemplate("resetPassword", {
+      verificationCode: otp,
+      language,
+    });
+    await sendCustomEmail({
+      to: user.email,
+      subject: mailSubject,
+      htmlContent,
+      userType: "customer",
+    });
+    return res.json({
+      success: true,
+      message: "If this email is registered, an OTP has been sent.",
+    });
+  } catch (error) {
+    console.error("Error in request-password-reset:", error);
+    return res
+      .status(500)
+      .json({ ersuccess: false, message: "Internal server error" });
+  }
+};
+export const getUser = async (req: Request, res: Response): Promise<any> => {
   const { id } = req.params;
   //console.log(id);
   try {
@@ -238,9 +278,7 @@ export const getUser = async (
       },
     }); // چک کردن وجود کاربر با آیدی
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found." });
+      return res.status(404).json({ message: "User not found." });
     }
     if (user.profile?.avatar) {
       const url = await getImageUrl(
@@ -260,10 +298,7 @@ export const getUser = async (
     });
   }
 };
-export const getUserEmail = async (
-  req: Request,
-  res: Response
-) => {
+export const getUserEmail = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const user = await prisma.users.findUnique({
