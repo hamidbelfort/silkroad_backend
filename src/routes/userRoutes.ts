@@ -7,6 +7,7 @@ import {
   getUser,
   getUserLanguage,
   requestResetPassword,
+  verifyOtpAndReset,
 } from "../controllers/userController";
 import { authenticateUser } from "../middleware/authMiddleware";
 
@@ -19,9 +20,18 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 // مسیر تغییر رمز عبور
-router.put("/change-password", authenticateUser, changePassword);
+router.put(
+  "/change-password",
+  authenticateUser,
+  changePassword
+);
 //درخواست تغییر رمز عبور
-router.post("/request-reset-password", requestResetPassword);
+router.post(
+  "/request-reset-password",
+  requestResetPassword
+);
+//بررسی و تایید رمز یکبار مصرف
+router.post("/verify-otp", verifyOtpAndReset);
 // دریافت اطلاعات کاربر
 router.get("/:id", authenticateUser, getUser);
 //دریافت تنظیمات زبان کاربر

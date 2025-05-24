@@ -4,11 +4,16 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prismaClient"; // import prisma client for DB interaction
 import { logUserAction } from "../utils/userActionLog";
-import { BucketName, generateOTP, getImageUrl } from "../utils/helpers";
+import {
+  BucketName,
+  generateOTP,
+  getImageUrl,
+} from "../utils/helpers";
 import { addMinutes } from "date-fns";
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
 import { generateEmailTemplate } from "../utils/email/templates/templateManager";
 import { sendCustomEmail } from "../utils/email/sendCustomEmail";
+const MAX_ATTEMPTS = 10;
 // 1. تابع ثبت‌نام (Register)
 export const registerUser = async (
   req: Request,
@@ -27,7 +32,8 @@ export const registerUser = async (
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "Another user has been registered using this email",
+        message:
+          "Another user has been registered using this email",
       });
     }
     const existingPhone = await prisma.users.findUnique({
@@ -38,7 +44,8 @@ export const registerUser = async (
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "Another user has been registered using this phone number",
+        message:
+          "Another user has been registered using this phone number",
       });
     }
     // هش کردن رمز عبور
@@ -68,12 +75,17 @@ export const registerUser = async (
     });
   }
 };
-export const getUserLanguage = async (req: any, res: any) => {
-  const userId = req.user?.id; // از middleware گرفته می‌شه
+export const getUserLanguage = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  const userId = (req as any).user?.id; // از middleware گرفته می‌شه
   const { language } = req.body;
 
   if (!["en", "zh"].includes(language)) {
-    return res.status(400).json({ success: false, error: "Invalid language" });
+    return res
+      .status(400)
+      .json({ success: false, error: "Invalid language" });
   }
 
   try {
@@ -87,11 +99,16 @@ export const getUserLanguage = async (req: any, res: any) => {
       message: "Language updated successfully",
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: "Server error" });
+    return res
+      .status(500)
+      .json({ success: false, error: "Server error" });
   }
 };
 // 2. تابع لاگین (Login)
-export const loginUser = async (req: Request, res: Response): Promise<any> => {
+export const loginUser = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   const { email, password } = req.body;
 
   try {
@@ -101,22 +118,28 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found" });
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     // مقایسه رمز عبور وارد شده با رمز عبور هش‌شده در دیتابیس
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.password
+    );
     if (!isPasswordValid) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email or Password is wrong." });
+      return res.status(400).json({
+        success: false,
+        message: "Email or Password is wrong.",
+      });
     }
     if (!user.isActive) {
       return res.status(400).json({
         success: false,
-        message: "Your account is deactivated. Please contact support.",
+        message:
+          "Your account is deactivated. Please contact support.",
       });
     }
     await logUserAction({
@@ -124,9 +147,13 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
       action: "Login User",
       description: `User ${user.fullname} logged in successfully.`,
     });
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: "1d", // اعتبار یک روزه
-    });
+    const token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: "1d", // اعتبار یک روزه
+      }
+    );
     // موفقیت‌آمیز بودن ورود کاربر
     return res.status(200).json({
       success: true,
@@ -138,9 +165,10 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error occured while loggin in." });
+    return res.status(500).json({
+      success: false,
+      message: "Error occured while loggin in.",
+    });
   }
 };
 
@@ -158,24 +186,32 @@ export const changePassword = async (
     });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found." });
+      return res.status(400).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
     // مقایسه رمز عبور قبلی با رمز عبور در دیتابیس
-    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    const isOldPasswordValid = await bcrypt.compare(
+      oldPassword,
+      user.password
+    );
     if (!isOldPasswordValid) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Old password is wrong!" });
+      return res.status(400).json({
+        success: false,
+        message: "Old password is wrong!",
+      });
     }
 
     // هش کردن رمز عبور جدید
-    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+    const hashedNewPassword = await bcrypt.hash(
+      newPassword,
+      12
+    );
 
     // بروزرسانی رمز عبور
-    const updatedUser = await prisma.users.update({
+    await prisma.users.update({
       where: { id: userId },
       data: { password: hashedNewPassword },
     });
@@ -203,25 +239,32 @@ export const requestResetPassword = async (
   const { email, language } = req.body;
 
   if (!email) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Email is required" });
+    return res.status(400).json({
+      success: false,
+      message: "Email is required",
+    });
   }
 
   try {
-    const user = await prisma.users.findUnique({ where: { email } });
+    const user = await prisma.users.findUnique({
+      where: { email },
+    });
 
     // حتی اگر کاربر نباشه، پیغام مشابه می‌فرستیم (برای امنیت)
     if (!user) {
       return res.json({
         success: false,
-        message: "If this email is registered, an OTP has been sent.",
+        message:
+          "If this email is registered, an OTP has been sent.",
       });
     }
 
     // حذف تمام OTPهای قبلی این کاربر
     await prisma.passwordResetOTP.deleteMany({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        expiresAt: { gt: new Date() }, // فقط OTPهای منقضی‌نشده رو پاک کن
+      },
     });
 
     // تولید OTP و زمان انقضا
@@ -236,11 +279,17 @@ export const requestResetPassword = async (
         user: { connect: { id: user.id } },
       },
     });
-    const mailSubject = generateEmailSubject("resetPassword", language);
-    const htmlContent = generateEmailTemplate("resetPassword", {
-      verificationCode: otp,
-      language,
-    });
+    const mailSubject = generateEmailSubject(
+      "resetPassword",
+      language
+    );
+    const htmlContent = generateEmailTemplate(
+      "resetPassword",
+      {
+        verificationCode: otp,
+        language,
+      }
+    );
     await sendCustomEmail({
       to: user.email,
       subject: mailSubject,
@@ -249,16 +298,122 @@ export const requestResetPassword = async (
     });
     return res.json({
       success: true,
-      message: "If this email is registered, an OTP has been sent.",
+      message:
+        "If this email is registered, an OTP has been sent.",
     });
   } catch (error) {
-    console.error("Error in request-password-reset:", error);
-    return res
-      .status(500)
-      .json({ ersuccess: false, message: "Internal server error" });
+    console.error(
+      "Error in request-password-reset:",
+      error
+    );
+    return res.status(500).json({
+      ersuccess: false,
+      message: "Internal server error",
+    });
   }
 };
-export const getUser = async (req: Request, res: Response): Promise<any> => {
+export const verifyOtpAndReset = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "All fields are required",
+    });
+  }
+
+  try {
+    const user = await prisma.users.findUnique({
+      where: { email },
+    });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP or email",
+      });
+    }
+
+    const otpRecord =
+      await prisma.passwordResetOTP.findFirst({
+        where: {
+          userId: user.id,
+          otp,
+        },
+      });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP or email",
+      });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      await prisma.passwordResetOTP.delete({
+        where: { id: otpRecord.id },
+      });
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired",
+      });
+    }
+
+    if (otpRecord.attempts >= MAX_ATTEMPTS) {
+      await prisma.passwordResetOTP.delete({
+        where: { id: otpRecord.id },
+      });
+      return res.status(400).json({
+        success: false,
+        message: "Too many incorrect attempts",
+      });
+    }
+
+    if (otpRecord.otp !== otp) {
+      await prisma.passwordResetOTP.update({
+        where: { id: otpRecord.id },
+        data: { attempts: { increment: 1 } },
+      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Incorrect OTP" });
+    }
+
+    // رمز جدید هش شود
+    const hashedPassword = await bcrypt.hash(
+      newPassword,
+      12
+    );
+
+    // رمز را ذخیره و OTP را حذف کن
+    await prisma.$transaction([
+      prisma.users.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      }),
+      prisma.passwordResetOTP.delete({
+        where: { id: otpRecord.id },
+      }),
+    ]);
+
+    return res.json({
+      success: true,
+      message: "Password has been reset successfully",
+    });
+  } catch (err) {
+    console.error("OTP verification error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+export const getUser = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   const { id } = req.params;
   //console.log(id);
   try {
@@ -278,7 +433,10 @@ export const getUser = async (req: Request, res: Response): Promise<any> => {
       },
     }); // چک کردن وجود کاربر با آیدی
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
     if (user.profile?.avatar) {
       const url = await getImageUrl(
@@ -294,11 +452,15 @@ export const getUser = async (req: Request, res: Response): Promise<any> => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
+      success: false,
       message: "Error occured while getting user.",
     });
   }
 };
-export const getUserEmail = async (req: Request, res: Response) => {
+export const getUserEmail = async (
+  req: Request,
+  res: Response
+) => {
   const { id } = req.params;
   try {
     const user = await prisma.users.findUnique({
@@ -312,6 +474,7 @@ export const getUserEmail = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
+      success: false,
       message: "Error occured while getting user.",
     });
   }
