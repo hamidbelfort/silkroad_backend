@@ -31,11 +31,13 @@ export async function sendCustomEmail({
       console.log(
         `smtpHost: ${smtpHost}, smtpPort: ${smtpPort}, smtpUser: ${smtpUser}, smtpPass: ${smtpPass}`
       );
+      const username = "exchange.silkroad@gmail.com";
+      const pass = "pexstmaajflyopwi";
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: smtpUser!,
-          pass: smtpPass!,
+          user: username,
+          pass: pass,
         },
       });
 
