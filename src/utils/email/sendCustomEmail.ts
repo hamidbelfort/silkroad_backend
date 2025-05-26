@@ -32,7 +32,6 @@ export async function sendCustomEmail({
         `smtpHost: ${smtpHost}, smtpPort: ${smtpPort}, smtpUser: ${smtpUser}, smtpPass: ${smtpPass}`
       );
       const transporter = nodemailer.createTransport({
-        host: smtpHost!,
         service: "gmail",
         auth: {
           user: smtpUser!,
