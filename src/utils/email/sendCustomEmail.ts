@@ -18,21 +18,14 @@ export async function sendCustomEmail({
   userType,
 }: SendCustomEmailOptions) {
   try {
-    const smtpHost = await getSettingValue("SMTP_HOST");
     const smtpUser = await getSettingValue("SMTP_USER");
     const smtpPass = await getSettingValue("SMTP_PASS");
-    const smtpPort = await getSettingValue("SMTP_PORT");
-    if (
-      smtpHost !== "" &&
-      smtpPort !== "" &&
-      smtpUser !== "" &&
-      smtpPass !== ""
-    ) {
+    if (smtpUser !== "" && smtpPass !== "") {
       console.log(
-        `smtpHost: ${smtpHost}, smtpPort: ${smtpPort}, smtpUser: ${smtpUser}, smtpPass: ${smtpPass}`
+        ` smtpUser: ${smtpUser}, smtpPass: ${smtpPass}`
       );
-      const username = "exchange.silkroad@gmail.com";
-      const pass = "pexstmaajflyopwi";
+      const username = smtpUser?.trim();
+      const pass = smtpPass?.trim();
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
