@@ -21,9 +21,9 @@ export async function sendCustomEmail({
     const smtpUser = await getSettingValue("SMTP_USER");
     const smtpPass = await getSettingValue("SMTP_PASS");
     if (smtpUser !== "" && smtpPass !== "") {
-      console.log(
-        ` smtpUser: ${smtpUser}, smtpPass: ${smtpPass}`
-      );
+      // console.log(
+      //   ` smtpUser: ${smtpUser}, smtpPass: ${smtpPass}`
+      // );
       const username = smtpUser?.trim();
       const pass = smtpPass?.trim();
       const transporter = nodemailer.createTransport({
