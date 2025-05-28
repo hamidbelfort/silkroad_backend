@@ -36,18 +36,18 @@ export const registerUser = async (
           "Another user has been registered using this email",
       });
     }
-    const existingPhone = await prisma.users.findUnique({
-      where: {
-        phone,
-      },
-    });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Another user has been registered using this phone number",
-      });
-    }
+    // const existingPhone = await prisma.users.findUnique({
+    //   where: {
+    //     phone,
+    //   },
+    // });
+    // if (existingUser) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message:
+    //       "Another user has been registered using this phone number",
+    //   });
+    // }
     // هش کردن رمز عبور
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -69,6 +69,13 @@ export const registerUser = async (
     });
   } catch (error) {
     console.error(error);
+    if ((error as any).code === "P2002") {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Another user has been registered using this email or phone number",
+      });
+    }
     return res.status(500).json({
       success: false,
       message: "Error Occured while registering new user.",
