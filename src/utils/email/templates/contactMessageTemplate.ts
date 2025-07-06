@@ -37,7 +37,7 @@ export function contactMessageTemplate({
             <div>
               <h1>Hello Dear Administrator</h1>
               <p>A new contact message with tracking number <strong>#${id}</strong> has been submitted✅.</p>
-              <p>The details of message are follows/p>
+              <p>The details of message are follows</p>
               <div>
               <h1>Full Name : ${name}</h1>
               <h3>Email: ${email}</h3>

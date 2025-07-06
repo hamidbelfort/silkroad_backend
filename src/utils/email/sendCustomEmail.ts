@@ -20,6 +20,7 @@ export async function sendCustomEmail({
   try {
     const smtpUser = await getSettingValue("SMTP_USER");
     const smtpPass = await getSettingValue("SMTP_PASS");
+    const APP_Name = process.env.APP_NAME || "Silk Road";
     if (smtpUser !== "" && smtpPass !== "") {
       // console.log(
       //   ` smtpUser: ${smtpUser}, smtpPass: ${smtpPass}`
@@ -66,7 +67,7 @@ export async function sendCustomEmail({
 
       // ارسال ایمیل
       await transporter.sendMail({
-        from: `"MyPlatform" <${process.env.SMTP_USER}>`,
+        from: `${APP_Name} <${process.env.SMTP_USER}>`,
         to,
         subject,
         html: finalHtml,
