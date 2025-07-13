@@ -4,17 +4,26 @@ import { reviewNeededTemplate } from "./reviewNeededTemplate";
 import { resetPasswordTemplate } from "./resetPasswordTemplate";
 import { orderDetailsTemplate } from "./orderDetailsTemplate";
 import { contactMessageTemplate } from "./contactMessageTemplate";
-
+import { newOrderNotificationTemplate } from "./newOrderNotificationTemplate";
 type TemplateTypes =
   | "confirmOrder"
   | "rejectOrder"
   | "reviewNeeded"
   | "resetPassword"
   | "orderDetails"
-  | "contactMessage";
+  | "contactMessage"
+  | "newOrderNotification";
 
 type LanguageTypes = "fa" | "en" | "zh";
 
+interface NewOrderNotificationOptions {
+  customerName: string;
+  orderId: number;
+  amount: number;
+  finalAmount: number;
+  status: string;
+  language: LanguageTypes;
+}
 interface ConfirmOrderOptions {
   customerName: string;
   orderId: number;
@@ -62,7 +71,8 @@ type TemplateOptions =
   | ReviewNeededOptions
   | ResetPasswordOptions
   | OrderDetailsOptions
-  | ContactMessageOptions;
+  | ContactMessageOptions
+  | NewOrderNotificationOptions;
 
 export function generateEmailTemplate(
   templateType: TemplateTypes,
@@ -70,28 +80,20 @@ export function generateEmailTemplate(
 ): string {
   switch (templateType) {
     case "confirmOrder":
-      return confirmOrderTemplate(
-        options as ConfirmOrderOptions
-      );
+      return confirmOrderTemplate(options as ConfirmOrderOptions);
     case "rejectOrder":
-      return rejectOrderTemplate(
-        options as RejectOrderOptions
-      );
+      return rejectOrderTemplate(options as RejectOrderOptions);
     case "reviewNeeded":
-      return reviewNeededTemplate(
-        options as ReviewNeededOptions
-      );
+      return reviewNeededTemplate(options as ReviewNeededOptions);
     case "resetPassword":
-      return resetPasswordTemplate(
-        options as ResetPasswordOptions
-      );
+      return resetPasswordTemplate(options as ResetPasswordOptions);
     case "orderDetails":
-      return orderDetailsTemplate(
-        options as OrderDetailsOptions
-      );
+      return orderDetailsTemplate(options as OrderDetailsOptions);
     case "contactMessage":
-      return contactMessageTemplate(
-        options as ContactMessageOptions
+      return contactMessageTemplate(options as ContactMessageOptions);
+    case "newOrderNotification": // ✅ جدید
+      return newOrderNotificationTemplate(
+        options as NewOrderNotificationOptions
       );
     default:
       return "";

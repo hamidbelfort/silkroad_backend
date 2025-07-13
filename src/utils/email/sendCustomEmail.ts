@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 import { getSettingValue } from "../../controllers/settingsController";
-import SMTPConnection from "nodemailer/lib/smtp-connection";
 
 type UserType = "admin" | "operator" | "customer";
 
