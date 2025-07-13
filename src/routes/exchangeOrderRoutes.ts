@@ -4,6 +4,9 @@ import {
   getExchangeOrder,
   getExchangeOrdersByUserId,
   updatePaymentRef,
+  getDisputedOrders,
+  getNewOrders,
+  updateOrderStatus,
 } from "../controllers/exchangeOrderController";
 import { authenticateUser } from "../middleware/authMiddleware";
 
@@ -21,5 +24,11 @@ router.patch(
   authenticateUser,
   updatePaymentRef
 ); // ثبت شماره پیگیری پرداخت
+//get all disputed orders
+router.get("/", authenticateUser, getDisputedOrders);
+//get new orders
+router.get("/new", authenticateUser, getNewOrders);
+//update order status
+router.patch("/:id", authenticateUser, updateOrderStatus);
 
 export default router;

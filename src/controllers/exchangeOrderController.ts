@@ -91,7 +91,7 @@ export const createExchangeOrder = async (
 export const getExchangeOrder = async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const { id } = req.params;
     const order = await prisma.exchangeOrder.findUnique({
@@ -111,7 +111,7 @@ export const getExchangeOrder = async (
 export const getExchangeOrdersByUserId = async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const { id } = req.params;
     const orders = await prisma.exchangeOrder.findMany({
@@ -130,7 +130,7 @@ export const getExchangeOrdersByUserId = async (
 export const updatePaymentRef = async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const { id } = req.params;
     const { paymentRef } = req.body;
@@ -158,7 +158,7 @@ export const updatePaymentRef = async (
 export const getNewOrders = async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const newOrders = await prisma.exchangeOrder.findMany({
       where: {
@@ -181,7 +181,7 @@ export const getNewOrders = async (
 export const getDisputedOrders = async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const disputedOrders =
       await prisma.exchangeOrder.findMany({
@@ -201,7 +201,7 @@ export const getDisputedOrders = async (
 export const updateOrderStatus = async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const { id } = req.params;
     const { status } = req.body;
