@@ -25,9 +25,13 @@ router.patch(
   updatePaymentRef
 ); // ثبت شماره پیگیری پرداخت
 //get all disputed orders
-router.get("/", authenticateUser, getDisputedOrders);
+router.get(
+  "/disputed",
+  authenticateUser,
+  getDisputedOrders
+);
 //get new orders
-router.get("/new", authenticateUser, getNewOrders);
+router.get("/list", authenticateUser, getNewOrders);
 //update order status
 router.patch("/:id", authenticateUser, updateOrderStatus);
 

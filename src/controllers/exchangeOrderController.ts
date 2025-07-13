@@ -94,6 +94,12 @@ export const getExchangeOrder = async (
 ): Promise<any> => {
   try {
     const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Order id is required",
+      });
+    }
     const order = await prisma.exchangeOrder.findUnique({
       where: { id: Number(id) },
       include: { bankAccount: true },
