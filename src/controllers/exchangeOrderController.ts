@@ -169,9 +169,6 @@ export const getNewOrders = async (
     const newOrders = await prisma.exchangeOrder.findMany({
       where: {
         status: "PENDING",
-        expiredAt: {
-          gt: new Date(Date.now()),
-        },
       },
     });
     res.json(newOrders);
