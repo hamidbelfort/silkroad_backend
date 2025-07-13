@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { sendCustomEmail } from "../utils/email/sendCustomEmail";
 import { generateEmailTemplate } from "../utils/email/templates/templateManager";
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
+import { logUserAction } from "../utils/userActionLog";
 // ایجاد سفارش جدید
 export const createExchangeOrder = async (
   req: Request,
@@ -73,7 +74,11 @@ export const createExchangeOrder = async (
       htmlContent,
       userType: "customer",
     });
-
+    await logUserAction({
+      userId,
+      action: "CREATE_EXCHANGE_ORDER",
+      description: `Created exchange order ${order.id}`,
+    });
     res.status(201).json({
       success: true,
       message: "Order submitted successfully",
@@ -235,6 +240,44 @@ export const updateOrderStatus = async (
     res.status(500).json({
       success: false,
       message: "Failed to update order status",
+    });
+  }
+};
+export const updateOrderDetails = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).user?.id;
+    const { amount, finalAmount } = req.body;
+    const updatedOrder = await prisma.exchangeOrder.update({
+      where: { id: Number(id) },
+      data: {
+        amount,
+        finalAmount,
+      },
+    });
+    if (!updatedOrder) {
+      return res.json({
+        success: false,
+        message: "Order status update failed",
+      });
+    }
+    await logUserAction({
+      userId,
+      action: "UPDATE_ORDER_DETAILS",
+      description: `Order details ${updatedOrder.id} updated by ${id}`,
+    });
+    return res.json({
+      success: true,
+      message: "Order status updated successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order details",
     });
   }
 };

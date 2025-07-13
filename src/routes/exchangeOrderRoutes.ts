@@ -7,6 +7,7 @@ import {
   getDisputedOrders,
   getNewOrders,
   updateOrderStatus,
+  updateOrderDetails,
 } from "../controllers/exchangeOrderController";
 import { authenticateUser } from "../middleware/authMiddleware";
 
@@ -29,7 +30,11 @@ router.get(
   authenticateUser,
   getExchangeOrdersByUserId
 ); // دریافت کلیه سفارشات با آیدی
-
+router.patch(
+  "/order/:id",
+  authenticateUser,
+  updateOrderDetails
+);
 router.patch("/:id", authenticateUser, updateOrderStatus); //update order status
 router.patch(
   "/:id/pay",
