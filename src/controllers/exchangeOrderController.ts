@@ -15,7 +15,7 @@ export const createExchangeOrder = async (
       finalAmount,
       bankAccountId,
       isDisputed,
-      language = "en",
+      language = "zh",
     } = req.body;
     const userId = (req as any).user?.id;
 
