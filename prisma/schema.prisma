@@ -113,7 +113,6 @@ model CompanyInfo {
   slogan    String?
   logo      String?
   addresses CompanyAddress[]
-  details   CompanyDetails?
 }
 
 model CompanyAddress {
@@ -134,15 +133,7 @@ model FAQ {
   answer   String
 }
 
-model CompanyDetails {
-  id            String      @id @default(uuid())
-  companyId     String      @unique
-  company       CompanyInfo @relation(fields: [companyId], references: [id])
-  aboutUs       String
-  contactUs     String
-  services      String
-  copyrightText String
-}
+
 
 model SliderImage {
   id          String   @id @default(uuid())

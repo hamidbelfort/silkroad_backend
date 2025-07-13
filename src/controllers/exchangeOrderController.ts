@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import { sendCustomEmail } from "../utils/email/sendCustomEmail";
 import { generateEmailTemplate } from "../utils/email/templates/templateManager";
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
-import { getUserEmail } from "./userController";
 // ایجاد سفارش جدید
 export const createExchangeOrder = async (
   req: Request,
@@ -11,13 +10,13 @@ export const createExchangeOrder = async (
 ): Promise<any> => {
   try {
     const {
-      userId,
       amount,
       finalAmount,
       bankAccountId,
       isDisputed,
       language = "en",
     } = req.body;
+    const userId = (req as any).user?.id;
 
     // 1. استعلام کاربر از دیتابیس
     const user = await prisma.users.findUnique({
@@ -29,7 +28,9 @@ export const createExchangeOrder = async (
     });
 
     if (!user) {
-      return res.status(404).json({ success: true, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: true, message: "User not found" });
     }
 
     // 2. ثبت سفارش در دیتابیس
@@ -48,14 +49,22 @@ export const createExchangeOrder = async (
     });
 
     // 3. تعیین نوع ایمیل
-    const templateType = isDisputed ? "reviewNeeded" : "confirmOrder";
-    const subject = generateEmailSubject(templateType, language);
+    const templateType = isDisputed
+      ? "reviewNeeded"
+      : "confirmOrder";
+    const subject = generateEmailSubject(
+      templateType,
+      language
+    );
 
-    const htmlContent = generateEmailTemplate(templateType, {
-      customerName: user.fullname!,
-      orderId: order.id,
-      language,
-    });
+    const htmlContent = generateEmailTemplate(
+      templateType,
+      {
+        customerName: user.fullname!,
+        orderId: order.id,
+        language,
+      }
+    );
 
     // 4. ارسال ایمیل
     await sendCustomEmail({
@@ -79,7 +88,10 @@ export const createExchangeOrder = async (
 };
 
 // دریافت سفارش بر اساس آیدی
-export const getExchangeOrder = async (req: Request, res: Response) => {
+export const getExchangeOrder = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { id } = req.params;
     const order = await prisma.exchangeOrder.findUnique({
@@ -115,7 +127,10 @@ export const getExchangeOrdersByUserId = async (
   }
 };
 // به‌روزرسانی سفارش (ثبت شماره پیگیری پرداخت)
-export const updatePaymentRef = async (req: Request, res: Response) => {
+export const updatePaymentRef = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { id } = req.params;
     const { paymentRef } = req.body;
@@ -137,6 +152,86 @@ export const updatePaymentRef = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Failed to update payment ref",
+    });
+  }
+};
+export const getNewOrders = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const newOrders = await prisma.exchangeOrder.findMany({
+      where: {
+        status: "PENDING",
+        expiredAt: {
+          gt: new Date(Date.now()),
+        },
+      },
+    });
+    res.json(newOrders);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch new orders",
+    });
+  }
+};
+
+export const getDisputedOrders = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const disputedOrders =
+      await prisma.exchangeOrder.findMany({
+        where: {
+          status: "WAITING_REVIEW",
+        },
+      });
+    res.json(disputedOrders);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch disputed orders",
+    });
+  }
+};
+export const updateOrderStatus = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (status === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Status is required",
+      });
+    }
+    const updatedOrder = await prisma.exchangeOrder.update({
+      where: { id: Number(id) },
+      data: {
+        status,
+      },
+    });
+    if (!updatedOrder) {
+      return res.json({
+        success: false,
+        message: "Order status update failed",
+      });
+    }
+    return res.json({
+      success: true,
+      message: "Order status updated successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order status",
     });
   }
 };
