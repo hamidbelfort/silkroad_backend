@@ -19,7 +19,6 @@ export const createExchangeOrder = async (
       language = "zh",
     } = req.body;
     const userId = (req as any).user?.id;
-
     // 1. استعلام کاربر از دیتابیس
     const user = await prisma.users.findUnique({
       where: { id: userId },
@@ -30,19 +29,28 @@ export const createExchangeOrder = async (
     });
 
     if (!user) {
-      return res.status(404).json({ success: true, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: true, message: "User not found" });
     }
     //2.استعلام سفارش های ثبتی کاربر
     const orders = await prisma.exchangeOrder.findMany({
       where: {
         userId,
-        status: { in: ["PENDING", "WAITING_REVIEW", "WAITING_PAYMENT"] },
+        status: {
+          in: [
+            "PENDING",
+            "WAITING_REVIEW",
+            "WAITING_PAYMENT",
+          ],
+        },
       },
     });
-    if (orders) {
-      return res
-        .status(400)
-        .json({ success: false, message: "You have already orders in queue" });
+    if (orders && orders.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already orders in queue",
+      });
     }
     // 3. ثبت سفارش در دیتابیس
     const order = await prisma.exchangeOrder.create({
@@ -110,15 +118,21 @@ const sendOrderEmailToAdmin = async ({
 }) => {
   try {
     const templateType = "newOrderNotification";
-    const subject = generateEmailSubject(templateType, language);
-    const htmlContent = generateEmailTemplate(templateType, {
-      customerName,
-      orderId,
-      amount,
-      finalAmount,
-      status,
-      language,
-    });
+    const subject = generateEmailSubject(
+      templateType,
+      language
+    );
+    const htmlContent = generateEmailTemplate(
+      templateType,
+      {
+        customerName,
+        orderId,
+        amount,
+        finalAmount,
+        status,
+        language,
+      }
+    );
     const adminMail = await getSettingValue("ADMIN_EMAIL");
     if (adminMail && adminMail !== "") {
       await sendCustomEmail({
@@ -130,7 +144,9 @@ const sendOrderEmailToAdmin = async ({
     }
   } catch (error: any) {
     const errorMsg = (error as Error).message;
-    console.log(`Error while sending email to admin : ${errorMsg}`);
+    console.log(
+      `Error while sending email to admin : ${errorMsg}`
+    );
   }
 };
 const sendOrderEmailToCustomer = async (
@@ -141,13 +157,21 @@ const sendOrderEmailToCustomer = async (
   language: any
 ) => {
   try {
-    const templateType = isDisputed ? "reviewNeeded" : "confirmOrder";
-    const subject = generateEmailSubject(templateType, language);
-    const htmlContent = generateEmailTemplate(templateType, {
-      customerName: fullname,
-      orderId: orderId,
-      language,
-    });
+    const templateType = isDisputed
+      ? "reviewNeeded"
+      : "confirmOrder";
+    const subject = generateEmailSubject(
+      templateType,
+      language
+    );
+    const htmlContent = generateEmailTemplate(
+      templateType,
+      {
+        customerName: fullname,
+        orderId: orderId,
+        language,
+      }
+    );
     await sendCustomEmail({
       to: email,
       subject,
@@ -156,7 +180,9 @@ const sendOrderEmailToCustomer = async (
     });
   } catch (error: any) {
     const errorMsg = (error as Error).message;
-    console.log(`Error while sending email to user : ${errorMsg}`);
+    console.log(
+      `Error while sending email to user : ${errorMsg}`
+    );
   }
 };
 // دریافت سفارش بر اساس آیدی
@@ -258,11 +284,12 @@ export const getDisputedOrders = async (
   res: Response
 ): Promise<any> => {
   try {
-    const disputedOrders = await prisma.exchangeOrder.findMany({
-      where: {
-        status: "WAITING_REVIEW",
-      },
-    });
+    const disputedOrders =
+      await prisma.exchangeOrder.findMany({
+        where: {
+          status: "WAITING_REVIEW",
+        },
+      });
     res.json(disputedOrders);
   } catch (error) {
     console.log(error);
