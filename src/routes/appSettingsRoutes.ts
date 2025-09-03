@@ -10,6 +10,6 @@ const router = Router();
 
 router.get("/", authenticateUser, getAllSettings);
 router.put("/", authenticateUser, updateSettings);
-router.get("/settings/:key", getSettingByKey);
+router.get("/:key", getSettingByKey);
 
 export default router;

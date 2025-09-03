@@ -5,7 +5,7 @@ import { generateEmailTemplate } from "../utils/email/templates/templateManager"
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
 import { logUserAction } from "../utils/userActionLog";
 import { getSettingValue } from "./settingsController";
-// ایجاد سفارش جدید
+
 export const createExchangeOrder = async (
   req: Request,
   res: Response
@@ -15,26 +15,27 @@ export const createExchangeOrder = async (
       amount,
       finalAmount,
       bankAccountId,
-      isDisputed,
+      status, // Use status and expiresAt directly from the request
+      expiresAt,
       language = "zh",
     } = req.body;
     const userId = (req as any).user?.id;
-    // 1. استعلام کاربر از دیتابیس
+
     const user = await prisma.users.findUnique({
       where: { id: userId },
-      select: {
-        fullname: true,
-        email: true,
-      },
+      select: { fullname: true, email: true },
     });
 
     if (!user) {
       return res
         .status(404)
-        .json({ success: true, message: "User not found" });
+        .json({
+          success: false,
+          message: "User not found",
+        });
     }
-    //2.استعلام سفارش های ثبتی کاربر
-    const orders = await prisma.exchangeOrder.findMany({
+
+    const openOrders = await prisma.exchangeOrder.findMany({
       where: {
         userId,
         status: {
@@ -46,35 +47,37 @@ export const createExchangeOrder = async (
         },
       },
     });
-    if (orders && orders.length > 0) {
+
+    if (openOrders.length > 0) {
       return res.status(400).json({
         success: false,
-        message: "You have already orders in queue",
+        message:
+          "You already have an open order in the queue.",
       });
     }
-    // 3. ثبت سفارش در دیتابیس
+
     const order = await prisma.exchangeOrder.create({
       data: {
         userId,
         amount,
         finalAmount,
         bankAccountId,
-        isDisputed: isDisputed ?? false,
-        status: isDisputed ? "WAITING_REVIEW" : "PENDING",
-        expiredAt: isDisputed
-          ? new Date(Date.now() + 12 * 60 * 60 * 1000)
-          : null,
+        status, // Use status from request
+        expiredAt: expiresAt, // Use expiresAt from request
       },
     });
-    //4. ارسال ایمیل به مشتری
+
+    // Determine if it was a disputed order for email purposes
+    const isDisputedOrder = status === "WAITING_REVIEW";
+
     await sendOrderEmailToCustomer(
-      isDisputed,
+      isDisputedOrder,
       user.email,
       user.fullname!,
       order.id,
       language
     );
-    //5. ارسال ایمیل به مدیر
+
     await sendOrderEmailToAdmin({
       customerName: user.fullname!,
       orderId: order.id,
@@ -83,12 +86,13 @@ export const createExchangeOrder = async (
       status: order.status,
       language: "en",
     });
-    //6.ثبت وقایع
+
     await logUserAction({
       userId,
       action: "CREATE_EXCHANGE_ORDER",
       description: `Created exchange order ${order.id}`,
     });
+
     res.status(201).json({
       success: true,
       message: "Order submitted successfully",
@@ -101,6 +105,8 @@ export const createExchangeOrder = async (
     });
   }
 };
+
+// ... (The rest of the file remains the same)
 const sendOrderEmailToAdmin = async ({
   customerName,
   orderId,

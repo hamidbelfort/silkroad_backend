@@ -9,6 +9,8 @@ export const getSettingByKey = async (
   res: Response
 ): Promise<any> => {
   const key = req.params.key;
+
+  // This check is sufficient.
   if (!(key in SettingKey)) {
     return res.status(400).json({
       success: false,
@@ -17,12 +19,6 @@ export const getSettingByKey = async (
   }
 
   const settingKey = key as SettingKey;
-  if (!key) {
-    return res.status(400).json({
-      success: false,
-      message: "Setting key is mandatory",
-    });
-  }
 
   try {
     const setting = await prisma.setting.findUnique({
@@ -31,7 +27,7 @@ export const getSettingByKey = async (
 
     if (!setting) {
       return res.status(404).json({
-        message: `Setting with ${key} did not found`,
+        message: `Setting with key '${key}' was not found`,
       });
     }
 
