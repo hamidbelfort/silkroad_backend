@@ -13,6 +13,7 @@ import { addMinutes } from "date-fns";
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
 import { generateEmailTemplate } from "../utils/email/templates/templateManager";
 import { sendCustomEmail } from "../utils/email/sendCustomEmail";
+import { Role } from "@prisma/client";
 const MAX_ATTEMPTS = 10;
 // 1. تابع ثبت‌نام (Register)
 export const registerUser = async (
@@ -417,6 +418,7 @@ export const verifyOtpAndReset = async (
     });
   }
 };
+//دریافت اطلاعات کاربر براساس آیدی
 export const getUser = async (
   req: Request,
   res: Response
@@ -464,6 +466,7 @@ export const getUser = async (
     });
   }
 };
+//دریافت ایمیل کاربر براساس آیدی
 export const getUserEmail = async (
   req: Request,
   res: Response
@@ -483,6 +486,135 @@ export const getUserEmail = async (
     return res.status(500).json({
       success: false,
       message: "Error occured while getting user.",
+    });
+  }
+};
+// Get a list of all users
+export const getAllUsers = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const users = await prisma.users.findMany({
+      select: {
+        id: true,
+        fullname: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+    });
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users.",
+    });
+  }
+};
+// Activate or deactivate a user account
+export const updateUserStatus = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid 'isActive' value provided.",
+      });
+    }
+
+    const updatedUser = await prisma.users.update({
+      where: { id },
+      data: { isActive },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `User status updated to ${
+        isActive ? "Active" : "Inactive"
+      }.`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user status.",
+    });
+  }
+};
+
+// Change a user's role
+export const updateUserRole = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!role || !Object.values(Role).includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role provided.",
+      });
+    }
+
+    await prisma.users.update({
+      where: { id },
+      data: { role },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `User role updated to ${role}.`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user role.",
+    });
+  }
+};
+
+// Generate a new random password for a user
+export const resetUserPassword = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    // Generate a secure random password (10 characters long)
+    const randomPassword = crypto
+      .getRandomValues(Buffer.alloc(10))
+      .toString("hex");
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(
+      randomPassword,
+      salt
+    );
+
+    await prisma.users.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+
+    // IMPORTANT: Return the unhashed password to the admin to share with the user.
+    res.status(200).json({
+      success: true,
+      message: "User password has been reset successfully.",
+      newPassword: randomPassword,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to reset user password.",
     });
   }
 };

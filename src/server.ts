@@ -22,6 +22,8 @@ import emailRoutes from "./routes/emailRoutes";
 import supabaseRoutes from "./routes/supabaseRoutes";
 import contactRoutes from "./routes/contactRoutes";
 import captchRoutes from "./routes/captchaRoutes";
+import adminUserRoutes from "./routes/adminUserRoutes";
+
 const app = express();
 //کانفیگ cors
 const allowedOrigins = [
@@ -63,6 +65,7 @@ app.use("/api/email", emailRoutes);
 app.use("/api/upload", supabaseRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/captcha", captchRoutes);
+app.use("/api/admin/users", adminUserRoutes);
 //اجرای جاب سفارش های منقضی شده
 startExpireOrdersInterval();
 // اجرای سرور روی پورت 3000

@@ -27,12 +27,10 @@ export const createExchangeOrder = async (
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "User not found",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     const openOrders = await prisma.exchangeOrder.findMany({
@@ -294,6 +292,7 @@ export const getDisputedOrders = async (
       await prisma.exchangeOrder.findMany({
         where: {
           status: "WAITING_REVIEW",
+          isDisputed: true,
         },
       });
     res.json(disputedOrders);
