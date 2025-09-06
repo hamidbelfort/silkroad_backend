@@ -5,6 +5,7 @@ import { generateEmailTemplate } from "../utils/email/templates/templateManager"
 import { generateEmailSubject } from "../utils/email/templates/subjectManager";
 import { logUserAction } from "../utils/userActionLog";
 import { getSettingValue } from "./settingsController";
+import { OrderStatus } from "@prisma/client";
 
 export const createExchangeOrder = async (
   req: Request,
@@ -37,11 +38,7 @@ export const createExchangeOrder = async (
       where: {
         userId,
         status: {
-          in: [
-            "PENDING",
-            "WAITING_REVIEW",
-            "WAITING_PAYMENT",
-          ],
+          in: ["PENDING", "WAITING_REVIEW", "WAITING_PAYMENT"],
         },
       },
     });
@@ -49,8 +46,7 @@ export const createExchangeOrder = async (
     if (openOrders.length > 0) {
       return res.status(400).json({
         success: false,
-        message:
-          "You already have an open order in the queue.",
+        message: "You already have an open order in the queue.",
       });
     }
 
@@ -122,21 +118,15 @@ const sendOrderEmailToAdmin = async ({
 }) => {
   try {
     const templateType = "newOrderNotification";
-    const subject = generateEmailSubject(
-      templateType,
-      language
-    );
-    const htmlContent = generateEmailTemplate(
-      templateType,
-      {
-        customerName,
-        orderId,
-        amount,
-        finalAmount,
-        status,
-        language,
-      }
-    );
+    const subject = generateEmailSubject(templateType, language);
+    const htmlContent = generateEmailTemplate(templateType, {
+      customerName,
+      orderId,
+      amount,
+      finalAmount,
+      status,
+      language,
+    });
     const adminMail = await getSettingValue("ADMIN_EMAIL");
     if (adminMail && adminMail !== "") {
       await sendCustomEmail({
@@ -148,9 +138,7 @@ const sendOrderEmailToAdmin = async ({
     }
   } catch (error: any) {
     const errorMsg = (error as Error).message;
-    console.log(
-      `Error while sending email to admin : ${errorMsg}`
-    );
+    console.log(`Error while sending email to admin : ${errorMsg}`);
   }
 };
 const sendOrderEmailToCustomer = async (
@@ -161,21 +149,13 @@ const sendOrderEmailToCustomer = async (
   language: any
 ) => {
   try {
-    const templateType = isDisputed
-      ? "reviewNeeded"
-      : "confirmOrder";
-    const subject = generateEmailSubject(
-      templateType,
-      language
-    );
-    const htmlContent = generateEmailTemplate(
-      templateType,
-      {
-        customerName: fullname,
-        orderId: orderId,
-        language,
-      }
-    );
+    const templateType = isDisputed ? "reviewNeeded" : "confirmOrder";
+    const subject = generateEmailSubject(templateType, language);
+    const htmlContent = generateEmailTemplate(templateType, {
+      customerName: fullname,
+      orderId: orderId,
+      language,
+    });
     await sendCustomEmail({
       to: email,
       subject,
@@ -184,9 +164,7 @@ const sendOrderEmailToCustomer = async (
     });
   } catch (error: any) {
     const errorMsg = (error as Error).message;
-    console.log(
-      `Error while sending email to user : ${errorMsg}`
-    );
+    console.log(`Error while sending email to user : ${errorMsg}`);
   }
 };
 // دریافت سفارش بر اساس آیدی
@@ -288,13 +266,12 @@ export const getDisputedOrders = async (
   res: Response
 ): Promise<any> => {
   try {
-    const disputedOrders =
-      await prisma.exchangeOrder.findMany({
-        where: {
-          status: "WAITING_REVIEW",
-          isDisputed: true,
-        },
-      });
+    const disputedOrders = await prisma.exchangeOrder.findMany({
+      where: {
+        status: "WAITING_REVIEW",
+        isDisputed: true,
+      },
+    });
     res.json(disputedOrders);
   } catch (error) {
     console.log(error);
@@ -377,5 +354,48 @@ export const updateOrderDetails = async (
       success: false,
       message: "Failed to update order details",
     });
+  }
+};
+export const getOrdersByStatus = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { status } = req.params;
+
+    // Validate if the provided status is a valid enum value
+    if (
+      !status ||
+      !Object.values(OrderStatus).includes(status as OrderStatus)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid order status provided." });
+    }
+
+    const orders = await prisma.exchangeOrder.findMany({
+      where: {
+        status: status as OrderStatus,
+      },
+      include: {
+        // Include user details for the admin panel
+        user: {
+          select: {
+            fullname: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc", // Show the newest orders first
+      },
+    });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch orders." });
   }
 };

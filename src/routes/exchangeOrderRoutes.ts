@@ -1,45 +1,27 @@
 import { Router } from "express";
 import {
   createExchangeOrder,
-  getExchangeOrder,
   getExchangeOrdersByUserId,
+  getExchangeOrder,
   updatePaymentRef,
-  getDisputedOrders,
-  getNewOrders,
-  updateOrderStatus,
-  updateOrderDetails,
 } from "../controllers/exchangeOrderController";
 import { authenticateUser } from "../middleware/authMiddleware";
 
 const router = Router();
 
-router.post("/", authenticateUser, createExchangeOrder); // ایجاد سفارش جدید
-router.get("/orders/list", authenticateUser, getNewOrders); //get new orders
-router.get(
-  "/orders/disputed",
-  authenticateUser,
-  getDisputedOrders
-); //get all disputed orders
-router.get(
-  "/orders/:id",
-  authenticateUser,
-  getExchangeOrder
-); // دریافت سفارش با آیدی
-router.get(
-  "/user/:id",
-  authenticateUser,
-  getExchangeOrdersByUserId
-); // دریافت کلیه سفارشات با آیدی
-router.patch(
-  "/order/:id",
-  authenticateUser,
-  updateOrderDetails
-);
-router.patch("/:id", authenticateUser, updateOrderStatus); //update order status
-router.patch(
-  "/:id/pay",
-  authenticateUser,
-  updatePaymentRef
-); // ثبت شماره پیگیری پرداخت
+// A user must be authenticated for all these routes
+router.use(authenticateUser);
+
+// Create a new order
+router.post("/", createExchangeOrder);
+
+// Get all orders for the logged-in user (assuming controller is adapted to get ID from req.user)
+router.get("/", getExchangeOrdersByUserId);
+
+// Get a specific order by its ID
+router.get("/:id", getExchangeOrder);
+
+// Update payment reference for an order
+router.put("/:id/payment-ref", updatePaymentRef);
 
 export default router;

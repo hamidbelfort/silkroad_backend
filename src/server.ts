@@ -23,6 +23,7 @@ import supabaseRoutes from "./routes/supabaseRoutes";
 import contactRoutes from "./routes/contactRoutes";
 import captchRoutes from "./routes/captchaRoutes";
 import adminUserRoutes from "./routes/adminUserRoutes";
+import adminOrderRoutes from "./routes/adminOrderRoutes";
 
 const app = express();
 //کانفیگ cors
@@ -59,7 +60,8 @@ app.use("/api/companyaddress", companyAddressRoutes);
 app.use("/api/faq", faqRoutes);
 app.use("/api/slider", sliderRoutes);
 app.use("/api/settings", appSettingsRoutes);
-app.use("/api/exchangeorder", exchangeOrderRoutes);
+app.use("/api/exchange-orders", exchangeOrderRoutes);
+app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/email", emailRoutes);
 //app.use("/api/upload", uploadRoute);
 app.use("/api/upload", supabaseRoutes);
