@@ -8,7 +8,6 @@ export const authorizeAdmin = (
 ) => {
   // We assume the `authenticateUser` middleware has already run and attached the user to the request.
   const user = (req as any).user;
-
   if (user && user.role === "ADMIN") {
     // If the user is an admin, proceed to the next handler.
     next();
